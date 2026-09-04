@@ -1,13 +1,18 @@
 # CHECKPOINT - Retomar após reiniciar
 
 Data: 2026-09-04
-Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub
+Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon (Postgres)
 
 ## Estado atual
 - Deploy de produção ativo: https://shakelumiinezn.vercel.app
 - Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master)
 - Vercel conectado ao GitHub (deploy automático em push na master via `vercel git connect`).
-- Persistência: 100% client-side via localStorage (SEM banco). Migração para Neon (Postgres) é etapa futura.
+- **Persistência migrada para Neon (Postgres serverless)** — projeto Neon `sparkling-cherry-15094366`. Tudo é persistido no banco EXCETO o carrinho (fica em localStorage/sessão).
+- **Login real do admin**: tabela `users`, senha com hash (scrypt), sessão via cookie HttpOnly `lumiine_session` (HMAC-SHA256). Admin seed: `admin@lumiine.com` / `admin123`.
+- API routes em `app/api/`: auth (login/me), products, orders (+[id]), loyalty, resellers (+[id]), commissions, expenses (+[id]), stock. AppContext hidrata via `Promise.all` no mount.
+- Vars de ambiente configuradas na Vercel (Production): `DATABASE_URL` (pooled) e `SESSION_SECRET`.
+- `.env.local` local contém `DATABASE_URL` + `SESSION_SECRET` (ignorado pelo git). Seed: `npm run db:seed` (usa `sql.query` para o schema — o driver Neon v2 exige `sql.query(stmt)` e NÃO aceita `sql(stmt)`/`sql.unsafe` para execução de strings).
+- Testado em produção: `/`, `/admin`, `/api/products` (4), `/api/orders` (3), `/api/auth/login` (admin) — todos OK contra o Neon.
 - Hero usa vídeo com transparência:
   - Chrome/Firefox/Edge: components/LazyHeroVideo.tsx -> <video> nativo com public/images/produto-3d.webm (VP9 + alpha nativo, loop via onEnded).
   - Safari: components/CanvasVideoKey.tsx -> processa public/images/produto-3d-fallback.mp4 por frame (removendo fundo cinza por saturação) num canvas, dando transparência real.
@@ -23,8 +28,9 @@ Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub
 - img01-06.jpg, sobre nós.jpg, logo.png, 3d product.png, screen-capture.mp4
 
 ## Pendente (retomar aqui)
-1. Confirmar deploy automático do GitHub (push na master -> Vercel).
-2. (Futuro) Migrar dados de localStorage para Neon Postgres + API routes.
+- Nada bloqueante. Deploy automático na master já validado; banco Neon ativo; login real funcionando.
+- Opcional futuro: adicionar `DATABASE_URL`/`SESSION_SECRET` aos ambientes Preview/Development no Vercel (só Production configurado).
+- Opcional: se um dia rodar o seed de novo, ele recria as tabelas do zero (`DROP TABLE IF EXISTS`).
 
 ## Instrução permanente do usuário
 - Sempre que houver erros (operacional, segurança, visual), CORRIGIR automaticamente e avisar o que foi feito.
