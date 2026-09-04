@@ -195,7 +195,7 @@ export default function Footer() {
 
         {/* BOTTOM COPYRIGHT & LEGAL */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#8E8E8A] gap-4">
-          <p>© 2026 LUMIINE WELLNESS SHAKES LTDA. CNPJ: 48.912.345/0001-02. Todos os direitos reservados.</p>
+          <p>© 2026 Shake Lumiine ZN</p>
           <div className="flex items-center gap-1 text-[#B8943D]">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Ambiente 100% Seguro e Criptografado</span>
