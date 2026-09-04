@@ -1,10 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import ProductImage from './ProductImage';
-import Link from 'next/link';
-import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
+import { Order } from '@/types';
+
+function buildWhatsAppMessage(order: Order): string {
+  const lines: string[] = [];
+  lines.push('*NOVO PEDIDO — LUMIINE*');
+  lines.push(`*Nome:* ${order.customerName}`);
+  lines.push(`*Pedido:* ${order.code}`);
+  lines.push('');
+  lines.push('*Itens do Pedido:*');
+  order.items.forEach((item, i) => {
+    const base = item.product.promoPrice || item.product.price;
+    const addons = (item.selectedAddons ?? [])
+      .map((id) => item.product.addons?.find((a) => a.id === id))
+      .filter((a): a is NonNullable<typeof a> => Boolean(a));
+    const addonsTotal = addons.reduce((sum, a) => sum + a.price, 0);
+    const addonsText = addons.map((a) => `+ ${a.label}`).join(', ');
+    lines.push(
+      `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''}${addonsText ? ` — ${addonsText}` : ''} x${item.quantity} — R$ ${((base + addonsTotal) * item.quantity).toFixed(2).replace('.', ',')}`
+    );
+  });
+  lines.push('');
+  lines.push(`*Total:* R$ ${order.total.toFixed(2).replace('.', ',')}`);
+  return lines.join('\n');
+}
 
 export default function CartDrawer() {
   const {
@@ -13,10 +37,52 @@ export default function CartDrawer() {
     setIsCartOpen,
     updateCartQuantity,
     removeFromCart,
-    cartSubtotal
+    cartSubtotal,
+    createOrder
   } = useApp();
 
+  const [customerName, setCustomerName] = useState('');
+  const [nameError, setNameError] = useState('');
+
   if (!isCartOpen) return null;
+
+  const handleFinalize = () => {
+    if (!customerName.trim()) {
+      setNameError('Informe seu nome para enviar o pedido.');
+      return;
+    }
+    setNameError('');
+
+    const newOrder = createOrder({
+      customerName: customerName.trim(),
+      customerEmail: '',
+      customerPhone: '',
+      address: {
+        street: '',
+        number: '',
+        complement: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        zipCode: ''
+      },
+      shippingMethod: 'retirada',
+      shippingCost: 0,
+      paymentMethod: 'pix',
+      items: cart,
+      subtotal: cartSubtotal,
+      discount: 0,
+      total: cartSubtotal
+    });
+
+    setCustomerName('');
+
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(newOrder))}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -162,15 +228,6 @@ export default function CartDrawer() {
           {/* Footer with Checkout CTA */}
           {cart.length > 0 && (
             <div className="p-6 border-t border-[#F0F0EC] bg-[#FAFAF8] space-y-4">
-              <div className="space-y-1.5 text-xs text-[#5A5A58]">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span className="font-semibold text-[#1A1A1A]">
-                    R$ {cartSubtotal.toFixed(2).replace('.', ',')}
-                  </span>
-                </div>
-              </div>
-
               <div className="pt-2 border-t border-[#E8E8E4] flex justify-between items-baseline">
                 <span className="text-sm font-semibold text-[#1A1A1A]">Total</span>
                 <span className="text-lg font-serif font-bold text-[#1A1A1A]">
@@ -178,14 +235,38 @@ export default function CartDrawer() {
                 </span>
               </div>
 
-              <Link
-                href="/checkout"
-                onClick={() => setIsCartOpen(false)}
+              {/* Customer name */}
+              <div>
+                <label className="block text-xs font-semibold text-[#5A5A58] mb-1">
+                  Seu Nome Completo
+                </label>
+                <input
+                  type="text"
+                  placeholder="Digite seu nome para finalizar"
+                  value={customerName}
+                  onChange={(e) => {
+                    setCustomerName(e.target.value);
+                    if (nameError) setNameError('');
+                  }}
+                  className={`w-full px-4 py-3 rounded-2xl bg-white border text-xs text-[#1A1A1A] focus:outline-none transition-colors ${
+                    nameError ? 'border-red-300 focus:border-red-400' : 'border-[#E2E2DF] focus:border-[#D4AF37]'
+                  }`}
+                />
+                {nameError && (
+                  <p className="flex items-center gap-1.5 mt-1.5 text-[11px] font-medium text-red-600 animate-fade-in">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {nameError}
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={handleFinalize}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 active:scale-[0.99] transition-all shadow-[0_4px_20px_rgba(201,162,39,0.3)]"
               >
                 <span>FINALIZAR PEDIDO</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#8E8E8A]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
