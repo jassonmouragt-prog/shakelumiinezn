@@ -13,6 +13,9 @@ import {
   BarChart3,
   Plus,
   Trash2,
+  Pencil,
+  X,
+  ImageIcon,
   Lock,
   LogOut,
   Eye,
@@ -30,7 +33,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { OrderStatus, ExpenseCategory, StockMovementType, StockMovementReason } from '@/types';
+import { OrderStatus, ExpenseCategory, StockMovementType, StockMovementReason, Product } from '@/types';
 import Footer from '@/components/Footer';
 
 export default function AdminPanelPage() {
@@ -40,11 +43,13 @@ export default function AdminPanelPage() {
     logoutAdmin,
     products,
     addProduct,
+    updateProduct,
     deleteProduct,
     toggleProductShowcase,
     orders,
     updateOrderStatus,
     resellers,
+    commissions,
     updateResellerStatus,
     expenses,
     addExpense,
@@ -72,6 +77,51 @@ export default function AdminPanelPage() {
   const [newProdStock, setNewProdStock] = useState('60');
   const [newProdImage, setNewProdImage] = useState('/images/shake-hero.jpg');
   const [newProdShowcase, setNewProdShowcase] = useState(true);
+
+  // Modal: Editar Produto
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('shakes');
+  const [editPrice, setEditPrice] = useState('0.00');
+  const [editPromoPrice, setEditPromoPrice] = useState('');
+  const [editResellerPrice, setEditResellerPrice] = useState('0.00');
+  const [editStock, setEditStock] = useState('0');
+  const [editImage, setEditImage] = useState('');
+  const [editShowcase, setEditShowcase] = useState(true);
+  const [editSubtitle, setEditSubtitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+
+  const openEditProduct = (prod: Product) => {
+    setEditingProduct(prod);
+    setEditName(prod.name);
+    setEditCategory(prod.category);
+    setEditPrice(String(prod.price));
+    setEditPromoPrice(prod.promoPrice != null ? String(prod.promoPrice) : '');
+    setEditResellerPrice(String(prod.resellerPrice));
+    setEditStock(String(prod.stock));
+    setEditImage(prod.image || '');
+    setEditShowcase(prod.showInShowcase !== false);
+    setEditSubtitle(prod.subtitle || '');
+    setEditDescription(prod.description || '');
+  };
+
+  const handleEditProductSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    updateProduct(editingProduct.id, {
+      name: editName,
+      category: editCategory as any,
+      price: parseFloat(editPrice) || 0,
+      promoPrice: editPromoPrice ? parseFloat(editPromoPrice) : undefined,
+      resellerPrice: parseFloat(editResellerPrice) || 0,
+      stock: parseInt(editStock, 10) || 0,
+      image: editImage,
+      showInShowcase: editShowcase,
+      subtitle: editSubtitle,
+      description: editDescription
+    });
+    setEditingProduct(null);
+  };
 
   // Modal: Registrar Despesa
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
@@ -169,11 +219,11 @@ export default function AdminPanelPage() {
   };
 
   // Financial calculations
-  const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0) + 84200;
+  const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
   const totalExpenses = expenses.reduce((acc, exp) => acc + exp.amount, 0);
-  const totalCommissions = 16840;
+  const totalCommissions = commissions.reduce((acc, c) => acc + c.commissionValue, 0);
   const netProfit = totalRevenue - totalExpenses - totalCommissions;
-  const netMargin = ((netProfit / totalRevenue) * 100).toFixed(1);
+  const netMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
   // Filtered orders
   const filteredOrders = orders.filter((o) =>
@@ -226,9 +276,9 @@ export default function AdminPanelPage() {
                 />
               </div>
 
-              {/* Dica para Avaliador */}
+              {/* Credenciais reais do administrador */}
               <div className="p-3 rounded-xl bg-[#FFFDF7] border border-[#D4AF37]/35 text-[11px] text-[#B8943D]">
-                <strong>Credenciais de Demonstração:</strong>
+                <strong>Credenciais de Acesso do Administrador:</strong>
                 <div className="mt-0.5 font-mono text-[10px]">
                   admin@lumiine.com / admin123
                 </div>
@@ -329,7 +379,7 @@ export default function AdminPanelPage() {
                   R$ {totalRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
                 <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
-                  <ArrowUpRight className="w-3 h-3" /> +24% este mês
+                  <ArrowUpRight className="w-3 h-3" /> {orders.length} pedidos registrados
                 </span>
               </div>
 
@@ -346,7 +396,7 @@ export default function AdminPanelPage() {
                 <div className="text-2xl sm:text-3xl font-serif font-bold text-[#C9A227]">
                   - R$ {totalCommissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
-                <span className="text-[11px] text-[#8E8E8A]">Repasse para 14 parceiros</span>
+                <span className="text-[11px] text-[#8E8E8A]">{commissions.length} comissões lançadas</span>
               </div>
 
               <div className="bg-gradient-to-b from-[#FFFDF7] to-white rounded-3xl p-6 border-2 border-[#D4AF37] shadow-xs space-y-1">
@@ -557,6 +607,13 @@ export default function AdminPanelPage() {
                         </td>
 
                         <td className="py-3.5 px-2 text-right">
+                          <button
+                            onClick={() => openEditProduct(prod)}
+                            className="p-1.5 text-[#8E8E8A] hover:text-[#C9A227] transition-colors"
+                            title="Editar produto"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => deleteProduct(prod.id)}
                             className="p-1.5 text-[#8E8E8A] hover:text-red-500 transition-colors"
@@ -967,6 +1024,211 @@ export default function AdminPanelPage() {
                     className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white font-bold hover:brightness-105"
                   >
                     Salvar Produto
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL EDITAR PRODUTO */}
+        {editingProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-8 max-w-lg w-full shadow-2xl space-y-5 animate-scale max-h-[90vh] overflow-y-auto">
+              <div className="border-b border-[#F0F0EC] pb-3 flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-[#1A1A1A]">Editar Produto</h3>
+                  <p className="text-xs text-[#8E8E8A]">Atualize preço, foto, categoria e outras informações.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingProduct(null)}
+                  className="p-1.5 text-[#8E8E8A] hover:text-[#1A1A1A] transition-colors"
+                  title="Fechar"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleEditProductSubmit} className="space-y-4 text-xs">
+                <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4]">
+                  <div className="w-14 h-14 rounded-xl bg-white border border-[#E2E2DF] relative overflow-hidden flex-shrink-0">
+                    {editImage ? (
+                      <Image src={editImage} alt={editName} fill className="object-contain" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[#C9A227]">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-[#5A5A58] space-y-0.5">
+                    <strong className="text-[#1A1A1A] block">{editName || 'Nome do produto'}</strong>
+                    <span>Categoria: {editCategory}</span>
+                    <span className="block">ID: {editingProduct.id}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Nome do Produto</label>
+                  <input
+                    type="text"
+                    required
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Categoria</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  >
+                    <option value="shakes">Shakes</option>
+                    <option value="combos">Combos</option>
+                    <option value="kits">Kits</option>
+                    <option value="salgados">Salgados</option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="novidades">Novidades</option>
+                    <option value="mais-vendidos">Mais Vendidos</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">Preço Final (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">Preço Promocional (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Opcional"
+                      value={editPromoPrice}
+                      onChange={(e) => setEditPromoPrice(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">Preço Revendedor (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      required
+                      value={editResellerPrice}
+                      onChange={(e) => setEditResellerPrice(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">Estoque</label>
+                    <input
+                      type="number"
+                      required
+                      value={editStock}
+                      onChange={(e) => setEditStock(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Foto do Produto (URL)</label>
+                  <input
+                    type="text"
+                    placeholder="/images/shake-hero.jpg ou https://..."
+                    value={editImage}
+                    onChange={(e) => setEditImage(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditImage('/images/shake-hero.jpg')}
+                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
+                        editImage === '/images/shake-hero.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
+                        <Image src="/images/shake-hero.jpg" alt="Vanilla" fill className="object-contain" />
+                      </div>
+                      <span>Vanilla Canister</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditImage('/images/shake-chocolate.jpg')}
+                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
+                        editImage === '/images/shake-chocolate.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
+                      }`}
+                    >
+                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
+                        <Image src="/images/shake-chocolate.jpg" alt="Cacao" fill className="object-contain" />
+                      </div>
+                      <span>Cacao Noir Canister</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Subtítulo</label>
+                  <input
+                    type="text"
+                    value={editSubtitle}
+                    onChange={(e) => setEditSubtitle(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Descrição</label>
+                  <textarea
+                    rows={3}
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF]">
+                    <input
+                      type="checkbox"
+                      checked={editShowcase}
+                      onChange={(e) => setEditShowcase(e.target.checked)}
+                      className="rounded text-[#C9A227] focus:ring-0 w-4 h-4"
+                    />
+                    <span className="font-semibold text-[#1A1A1A]">
+                      Exibir como amostra/destaque na vitrine pública do site
+                    </span>
+                  </label>
+                </div>
+
+                <div className="pt-4 flex justify-end gap-2 border-t border-[#F0F0EC]">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(null)}
+                    className="px-5 py-2.5 rounded-full border border-[#D9D9D9] text-[#5A5A58] font-semibold"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white font-bold hover:brightness-105"
+                  >
+                    Salvar Alterações
                   </button>
                 </div>
               </form>
