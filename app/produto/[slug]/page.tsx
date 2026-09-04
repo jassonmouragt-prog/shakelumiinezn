@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import ProductImage from '@/components/ProductImage';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Star, Plus, Minus, Check, Sparkles, ShieldCheck, Heart, ArrowLeft, Truck, RefreshCw } from 'lucide-react';
@@ -15,11 +16,32 @@ export default function SingleProductPage() {
 
   const product = products.find((p) => p.slug === slug) || products[0];
 
-  const [selectedImage, setSelectedImage] = useState(product.image);
-  const [selectedFlavor, setSelectedFlavor] = useState(product.flavors[0] || 'Original');
+  const [selectedImage, setSelectedImage] = useState(product?.image ?? '');
+  const [selectedFlavor, setSelectedFlavor] = useState(product?.flavors?.[0] || 'Original');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'descricao' | 'ingredientes' | 'nutricional' | 'beneficios' | 'avaliacoes'>('descricao');
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] pt-28 flex items-center justify-center">
+        <div className="text-center max-w-md px-6 space-y-4">
+          <h1 className="text-xl sm:text-2xl font-sans font-bold text-[#1A1A1A]">
+            Produto não encontrado
+          </h1>
+          <p className="text-xs text-[#8E8E8A]">
+            O produto ainda não está disponível ou o catálogo está carregando.
+          </p>
+          <Link
+            href="/produtos"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-white text-xs font-bold tracking-wider"
+          >
+            Voltar para o catálogo
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const addonsList = [
     { id: 'dosador', label: 'Dosador de Aço Dourado Colecionável (+ R$ 14,90)', price: 14.90 },
@@ -72,13 +94,7 @@ export default function SingleProductPage() {
               )}
 
               <div className="relative w-full h-full drop-shadow-[0_20px_30px_rgba(0,0,0,0.06)]">
-                <Image
-                  src={selectedImage}
-                  alt={product.name}
-                  fill
-                  priority
-                  className="object-contain"
-                />
+                <ProductImage src={selectedImage} alt={product.name} priority />
               </div>
             </div>
 

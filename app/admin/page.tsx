@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import ProductImage from '@/components/ProductImage';
 import {
   TrendingUp,
   DollarSign,
@@ -579,7 +580,7 @@ export default function AdminPanelPage() {
                       <tr key={prod.id} className="hover:bg-[#FAFAF8]">
                         <td className="py-3.5 px-2 flex items-center gap-3">
                           <div className="w-12 h-12 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] relative overflow-hidden flex-shrink-0">
-                            <Image src={prod.image} alt={prod.name} fill className="object-contain" />
+                            <ProductImage src={prod.image} alt={prod.name} />
                           </div>
                           <div>
                             <strong className="text-[#1A1A1A] block">{prod.name}</strong>

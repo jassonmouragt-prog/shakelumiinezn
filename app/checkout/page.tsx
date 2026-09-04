@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import ProductImage from '@/components/ProductImage';
 import {
   CheckCircle2,
   ArrowRight,
@@ -538,7 +538,7 @@ export default function CheckoutPage() {
                     return (
                       <div key={item.id} className="flex items-center gap-3 text-xs">
                         <div className="w-12 h-12 rounded-xl bg-[#FAFAF8] border border-[#E8E8E4] relative overflow-hidden flex-shrink-0">
-                          <Image src={item.product.image} alt={item.product.name} fill className="object-contain" />
+                          <ProductImage src={item.product.image} alt={item.product.name} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-[#1A1A1A] truncate">{item.product.name}</h5>

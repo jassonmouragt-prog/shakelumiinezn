@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
+import ProductImage from './ProductImage';
 import Link from 'next/link';
 import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
@@ -108,10 +108,9 @@ export default function CartDrawer() {
                   >
                     {/* Thumbnail */}
                     <div className="w-20 h-20 rounded-xl overflow-hidden bg-white border border-[#E2E2DF] flex-shrink-0 relative">
-                      <Image
+                      <ProductImage
                         src={item.product.image}
                         alt={item.product.name}
-                        fill
                         className="object-cover"
                       />
                     </div>

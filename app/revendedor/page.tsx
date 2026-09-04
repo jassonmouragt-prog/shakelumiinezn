@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import ProductImage from '@/components/ProductImage';
 import {
   TrendingUp,
   DollarSign,
@@ -27,8 +27,8 @@ export default function ResellerPortalPage() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'loja' | 'comissoes' | 'clientes'>('dashboard');
   const [copiedLink, setCopiedLink] = useState(false);
   const [selectedBatchQty, setSelectedBatchQty] = useState<Record<string, number>>({
-    'prod-1': 10,
-    'prod-2': 10
+    'menu-shake-pave-trufado': 10,
+    'menu-shake-churros': 10
   });
 
   const resellerLink = `https://lumiine.com/r/${currentReseller.referralCode}`;
@@ -276,7 +276,7 @@ export default function ResellerPortalPage() {
                   >
                     <div className="flex gap-4">
                       <div className="w-24 h-24 rounded-2xl bg-white border border-[#E8E8E4] p-2 relative flex-shrink-0">
-                        <Image src={product.image} alt={product.name} fill className="object-contain" />
+                        <ProductImage src={product.image} alt={product.name} />
                       </div>
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-[#B8943D] uppercase">MARGEM ATRATIVA</span>

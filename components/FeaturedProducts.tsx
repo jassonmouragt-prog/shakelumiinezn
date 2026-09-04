@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
+import ProductImage from './ProductImage';
 import Link from 'next/link';
 import { Star, Heart, Plus, Sparkles, ArrowRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
@@ -124,12 +124,7 @@ export default function FeaturedProducts() {
                   href={`/produto/${product.slug}`}
                   className="relative w-full h-full block group-hover:scale-105 transition-transform duration-500 ease-out"
                 >
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain"
-                  />
+                  <ProductImage src={product.image} alt={product.name} />
                 </Link>
               </div>
 
