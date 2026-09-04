@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
+  AlertCircle,
   CreditCard,
   QrCode,
   Truck,
@@ -18,47 +19,116 @@ import {
   Check
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { WHATSAPP_NUMBER } from '@/lib/constants';
 import { Order } from '@/types';
 import Footer from '@/components/Footer';
 
 export default function CheckoutPage() {
-  const { cart, cartSubtotal, freeShippingThreshold, createOrder } = useApp();
+  const { cart, cartSubtotal, createOrder } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Form Fields
   const [formData, setFormData] = useState({
-    name: 'Mariana Duarte',
-    email: 'mariana.duarte@email.com',
-    phone: '(11) 98765-4321',
+    name: '',
+    email: '',
+    phone: '',
     shippingMethod: 'entrega' as 'entrega' | 'retirada',
-    zipCode: '01442-001',
-    street: 'Alameda Gabriel Monteiro da Silva',
-    number: '1420',
-    complement: 'Apto 82',
-    neighborhood: 'Jardim Paulistano',
-    city: 'São Paulo',
-    state: 'SP',
+    zipCode: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
+    city: '',
+    state: '',
     paymentMethod: 'pix' as 'pix' | 'cartao',
-    cardNumber: '•••• •••• •••• 4242',
-    cardName: 'MARIANA DUARTE',
-    cardExpiry: '08/29',
-    cardCvv: '882',
+    cardNumber: '',
+    cardName: '',
+    cardExpiry: '',
+    cardCvv: '',
     resellerCode: ''
   });
+
+  const [formError, setFormError] = useState('');
 
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
   const [copiedPix, setCopiedPix] = useState(false);
 
-  const shippingCost = formData.shippingMethod === 'retirada' || cartSubtotal >= freeShippingThreshold ? 0 : 22.00;
+  const shippingCost = formData.shippingMethod === 'retirada' ? 0 : 22.00;
   const discount = formData.resellerCode.toUpperCase() === 'PARCEIRO10' ? cartSubtotal * 0.10 : 0;
   const finalTotal = cartSubtotal + shippingCost - discount;
 
+  const buildWhatsAppMessage = (order: Order) => {
+    const lines: string[] = [];
+    lines.push('*NOVO PEDIDO — LUMIINE*');
+    lines.push(`*Nome:* ${order.customerName}`);
+    lines.push(`*Telefone:* ${order.customerPhone}`);
+    lines.push(`*Pedido:* ${order.code}`);
+    lines.push('');
+    lines.push('*Itens do Pedido:*');
+    order.items.forEach((item, i) => {
+      const price = item.product.promoPrice || item.product.price;
+      lines.push(
+        `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''} x${item.quantity} — R$ ${(price * item.quantity).toFixed(2).replace('.', ',')}`
+      );
+    });
+    lines.push('');
+    lines.push(`*Subtotal:* R$ ${order.subtotal.toFixed(2).replace('.', ',')}`);
+    if (order.shippingMethod === 'retirada') {
+      lines.push('*Frete:* Grátis (Retirada em Lounge)');
+    } else {
+      lines.push(`*Frete:* R$ ${order.shippingCost.toFixed(2).replace('.', ',')}`);
+    }
+    if (order.discount > 0) {
+      lines.push(`*Desconto:* - R$ ${order.discount.toFixed(2).replace('.', ',')}`);
+    }
+    lines.push(`*Total:* R$ ${order.total.toFixed(2).replace('.', ',')}`);
+    lines.push('');
+    lines.push(`*Pagamento:* ${order.paymentMethod === 'pix' ? 'PIX' : 'Cartão de Crédito'}`);
+    if (order.shippingMethod === 'entrega') {
+      const a = order.address;
+      lines.push('');
+      lines.push('*Endereço de Entrega:*');
+      lines.push(`${a.street}, ${a.number}${a.complement ? ` - ${a.complement}` : ''}`);
+      lines.push(`${a.neighborhood}, ${a.city} - ${a.state}`);
+      lines.push(`CEP: ${a.zipCode}`);
+    }
+    return lines.join('\n');
+  };
+
   const handleNext = () => {
-    if (step < 3) {
-      setStep((s) => (s + 1) as any);
+    setFormError('');
+    if (step === 1) {
+      if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+        setFormError('Preencha seu nome completo, email e telefone para continuar.');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (formData.shippingMethod === 'entrega') {
+        const required = [
+          formData.zipCode,
+          formData.street,
+          formData.number,
+          formData.neighborhood,
+          formData.city,
+          formData.state
+        ];
+        if (required.some((v) => !v.trim())) {
+          setFormError('Preencha o endereço completo para entrega.');
+          return;
+        }
+      }
+      setStep(3);
     } else if (step === 3) {
-      // Place Order
+      if (!formData.name.trim()) {
+        setFormError('Informe seu nome completo antes de enviar o pedido.');
+        return;
+      }
+      if (!formData.phone.trim()) {
+        setFormError('Informe seu telefone/WhatsApp para contato.');
+        return;
+      }
       const newOrder = createOrder({
         customerName: formData.name,
         customerEmail: formData.email,
@@ -83,6 +153,11 @@ export default function CheckoutPage() {
       });
       setCreatedOrder(newOrder);
       setStep(4);
+      window.open(
+        `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(newOrder))}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
     }
   };
 
@@ -488,6 +563,13 @@ export default function CheckoutPage() {
                       </span>
                     )}
                   </div>
+                </div>
+              )}
+
+              {formError && (
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium animate-fade-in">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{formError}</span>
                 </div>
               )}
 

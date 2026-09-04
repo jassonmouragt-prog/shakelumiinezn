@@ -3,7 +3,7 @@
 import React from 'react';
 import ProductImage from './ProductImage';
 import Link from 'next/link';
-import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export default function CartDrawer() {
@@ -13,10 +13,7 @@ export default function CartDrawer() {
     setIsCartOpen,
     updateCartQuantity,
     removeFromCart,
-    cartSubtotal,
-    freeShippingThreshold,
-    amountToFreeShipping,
-    freeShippingProgress
+    cartSubtotal
   } = useApp();
 
   if (!isCartOpen) return null;
@@ -51,33 +48,6 @@ export default function CartDrawer() {
             >
               <X className="w-5 h-5" />
             </button>
-          </div>
-
-          {/* Benefit progress bar */}
-          <div className="px-6 py-3.5 bg-gradient-to-r from-[#FAFAF8] via-white to-[#FAFAF8] border-b border-[#F0F0EC]">
-            <div className="flex items-center justify-between text-xs mb-2">
-              <span className="font-medium text-[#3A3A38] flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                {amountToFreeShipping > 0 ? (
-                  <span>
-                    Faltam <strong className="text-[#B8943D]">R$ {amountToFreeShipping.toFixed(2).replace('.', ',')}</strong> para frete grátis
-                  </span>
-                ) : (
-                  <span className="text-[#B8943D] font-semibold">Parabéns! Você ganhou Frete Cortesia Express</span>
-                )}
-              </span>
-              <span className="text-[11px] font-semibold text-[#8E8E8A]">
-                {Math.round(freeShippingProgress)}%
-              </span>
-            </div>
-
-            {/* Progress Track */}
-            <div className="w-full h-2 bg-[#F0F0EC] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] transition-all duration-500 rounded-full"
-                style={{ width: `${freeShippingProgress}%` }}
-              />
-            </div>
           </div>
 
           {/* Items List */}
@@ -188,9 +158,7 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex justify-between">
                   <span>Frete estimado</span>
-                  <span className="font-medium text-[#B8943D]">
-                    {amountToFreeShipping === 0 ? 'Grátis' : 'Calculado no checkout'}
-                  </span>
+                  <span className="font-medium text-[#B8943D]">Calculado no checkout</span>
                 </div>
               </div>
 
