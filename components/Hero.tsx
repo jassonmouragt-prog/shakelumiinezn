@@ -20,7 +20,10 @@ export default function Hero() {
     setMousePosition({ x, y });
   };
 
-  const heroProduct = products[0];
+  const heroProduct =
+    products.find((p) => p.name === 'Hype Drink') ??
+    products.find((p) => p.price > 0) ??
+    products[0];
 
   return (
     <section
@@ -124,8 +127,10 @@ export default function Hero() {
               {/* Floating micro-pill indicator on product hover */}
               <div className="absolute -bottom-2 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full border border-[#D4AF37]/50 shadow-md text-[11px] font-semibold text-[#1A1A1A] flex items-center gap-1.5 opacity-90 group-hover:opacity-100 group-hover:scale-105 transition-all">
                 <Sparkles className="w-3 h-3 text-[#C9A227]" />
-                <span>Vanilla Bourbon & Amêndoas Douradas</span>
-                <span className="text-[#B8943D] font-bold ml-1">R$ 59,90</span>
+                <span>{heroProduct?.name}</span>
+                <span className="text-[#B8943D] font-bold ml-1">
+                  {heroProduct ? `R$ ${heroProduct.price.toFixed(2).replace('.', ',')}` : ''}
+                </span>
               </div>
             </div>
 
