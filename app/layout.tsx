@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
-import Navbar from '@/components/Navbar';
-import CartDrawer from '@/components/CartDrawer';
 import ToastContainer from '@/components/ToastContainer';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -39,8 +37,6 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${plusJakartaSans.variable} ${cormorant.variable}`}>
       <body className="bg-[#FAFAF8] text-[#1A1A1A] font-sans antialiased min-h-screen flex flex-col selection:bg-[#D4AF37]/20 selection:text-[#B8943D]">
         <AppProvider>
-          <Navbar />
-          <CartDrawer />
           <ToastContainer />
           <main className="flex-1">
             {children}

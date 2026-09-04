@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { OrderStatus, ExpenseCategory, StockMovementType, StockMovementReason, Product, ProductAddon } from '@/types';
-import Footer from '@/components/Footer';
+import ProductImageUpload from '@/components/ProductImageUpload';
 
 export default function AdminPanelPage() {
   const {
@@ -76,7 +76,7 @@ export default function AdminPanelPage() {
   const [newProdPrice, setNewProdPrice] = useState('69.90');
   const [newProdResellerPrice, setNewProdResellerPrice] = useState('39.90');
   const [newProdStock, setNewProdStock] = useState('60');
-  const [newProdImage, setNewProdImage] = useState('/images/shake-hero.jpg');
+  const [newProdImage, setNewProdImage] = useState('');
   const [newProdShowcase, setNewProdShowcase] = useState(true);
 
   // Modal: Editar Produto
@@ -241,7 +241,7 @@ export default function AdminPanelPage() {
   // 1. TELA DE LOGIN (PROTEÇÃO POR SENHA)
   if (!isAdminAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
+      <div className="min-h-screen bg-[#F5F4F1] pt-8 flex flex-col justify-between">
         <div className="max-w-md mx-auto px-4 w-full pb-20">
           <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-8 sm:p-10 shadow-sm space-y-6 animate-fade-in">
             <div className="text-center space-y-2">
@@ -306,15 +306,13 @@ export default function AdminPanelPage() {
             </div>
           </div>
         </div>
-
-        <Footer />
       </div>
     );
   }
 
   // 2. PAINEL ADMINISTRATIVO AUTENTICADO
   return (
-    <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F5F4F1] pt-8 flex flex-col justify-between">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20">
         
         {/* TOP BAR EXECUTIVA */}
@@ -968,37 +966,12 @@ export default function AdminPanelPage() {
                   </div>
                 </div>
 
-                {/* Seletor Rápido de Imagem de Estúdio */}
-                <div>
-                  <label className="block font-semibold text-[#5A5A58] mb-1">Design do Frasco (Render 3D)</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setNewProdImage('/images/shake-hero.jpg')}
-                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
-                        newProdImage === '/images/shake-hero.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
-                      }`}
-                    >
-                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
-                        <Image src="/images/shake-hero.jpg" alt="Vanilla" fill className="object-contain" />
-                      </div>
-                      <span>Vanilla Canister</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setNewProdImage('/images/shake-chocolate.jpg')}
-                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
-                        newProdImage === '/images/shake-chocolate.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
-                      }`}
-                    >
-                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
-                        <Image src="/images/shake-chocolate.jpg" alt="Cacao" fill className="object-contain" />
-                      </div>
-                      <span>Cacao Noir Canister</span>
-                    </button>
-                  </div>
-                </div>
+                {/* Upload da Foto do Produto */}
+                <ProductImageUpload
+                  label="Foto do Produto"
+                  value={newProdImage}
+                  onChange={setNewProdImage}
+                />
 
                 {/* Toggle: Disponível na Vitrine / Amostra */}
                 <div className="pt-2">
@@ -1058,7 +1031,7 @@ export default function AdminPanelPage() {
                 <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4]">
                   <div className="w-14 h-14 rounded-xl bg-white border border-[#E2E2DF] relative overflow-hidden flex-shrink-0">
                     {editImage ? (
-                      <Image src={editImage} alt={editName} fill className="object-contain" />
+                      <Image src={editImage} alt={editName} fill unoptimized className="object-contain" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-[#C9A227]">
                         <ImageIcon className="w-6 h-6" />
@@ -1149,42 +1122,11 @@ export default function AdminPanelPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block font-semibold text-[#5A5A58] mb-1">Foto do Produto (URL)</label>
-                  <input
-                    type="text"
-                    placeholder="/images/shake-hero.jpg ou https://..."
-                    value={editImage}
-                    onChange={(e) => setEditImage(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                  />
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditImage('/images/shake-hero.jpg')}
-                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
-                        editImage === '/images/shake-hero.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
-                      }`}
-                    >
-                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
-                        <Image src="/images/shake-hero.jpg" alt="Vanilla" fill className="object-contain" />
-                      </div>
-                      <span>Vanilla Canister</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditImage('/images/shake-chocolate.jpg')}
-                      className={`p-2 rounded-xl border flex items-center gap-2 text-[11px] ${
-                        editImage === '/images/shake-chocolate.jpg' ? 'border-[#D4AF37] bg-[#FFFDF7] font-bold' : 'border-[#E2E2DF]'
-                      }`}
-                    >
-                      <div className="w-8 h-8 relative rounded-md overflow-hidden bg-[#FAFAF8]">
-                        <Image src="/images/shake-chocolate.jpg" alt="Cacao" fill className="object-contain" />
-                      </div>
-                      <span>Cacao Noir Canister</span>
-                    </button>
-                  </div>
-                </div>
+                <ProductImageUpload
+                  label="Foto do Produto"
+                  value={editImage}
+                  onChange={setEditImage}
+                />
 
                 <div>
                   <label className="block font-semibold text-[#5A5A58] mb-1">Subtítulo</label>
@@ -1468,7 +1410,6 @@ export default function AdminPanelPage() {
 
       </div>
 
-      <Footer />
     </div>
   );
 }
