@@ -34,7 +34,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { OrderStatus, ExpenseCategory, StockMovementType, StockMovementReason, Product } from '@/types';
+import { OrderStatus, ExpenseCategory, StockMovementType, StockMovementReason, Product, ProductAddon } from '@/types';
 import Footer from '@/components/Footer';
 
 export default function AdminPanelPage() {
@@ -91,6 +91,7 @@ export default function AdminPanelPage() {
   const [editShowcase, setEditShowcase] = useState(true);
   const [editSubtitle, setEditSubtitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editAddons, setEditAddons] = useState<ProductAddon[]>([]);
 
   const openEditProduct = (prod: Product) => {
     setEditingProduct(prod);
@@ -104,6 +105,7 @@ export default function AdminPanelPage() {
     setEditShowcase(prod.showInShowcase !== false);
     setEditSubtitle(prod.subtitle || '');
     setEditDescription(prod.description || '');
+    setEditAddons(prod.addons ?? []);
   };
 
   const handleEditProductSubmit = (e: React.FormEvent) => {
@@ -119,7 +121,10 @@ export default function AdminPanelPage() {
       image: editImage,
       showInShowcase: editShowcase,
       subtitle: editSubtitle,
-      description: editDescription
+      description: editDescription,
+      addons: editAddons
+        .map((a) => ({ id: a.id, label: a.label.trim(), price: a.price }))
+        .filter((a) => Boolean(a.label) || a.price > 0)
     });
     setEditingProduct(null);
   };
@@ -478,7 +483,7 @@ export default function AdminPanelPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-base font-bold text-[#1A1A1A]">Gerenciamento e Rastreio de Pedidos</h3>
-                <p className="text-xs text-[#8E8E8A]">Acompanhe o status e atualize o estágio de entrega dos clientes</p>
+                <p className="text-xs text-[#8E8E8A]">Acompanhe o status e atualize o estágio dos pedidos dos clientes</p>
               </div>
 
               <div className="relative w-full sm:w-72">
@@ -1201,6 +1206,49 @@ export default function AdminPanelPage() {
                     onChange={(e) => setEditDescription(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
                   />
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Adicionais do Produto (Opcional)</label>
+                  <p className="text-[11px] text-[#8E8E8A] -mt-1">
+                    Cadastre itens opcionais que acompanham este produto. Eles aparecem como opções na página pública do produto para o cliente escolher.
+                  </p>
+                  {editAddons.map((addon, i) => (
+                    <div key={addon.id} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nome (ex: Shot de Colágeno)"
+                        value={addon.label}
+                        onChange={(e) => setEditAddons((prev) => prev.map((a, idx) => (idx === i ? { ...a, label: e.target.value } : a)))}
+                        className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                      />
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="R$"
+                        value={addon.price}
+                        onChange={(e) => setEditAddons((prev) => prev.map((a, idx) => (idx === i ? { ...a, price: parseFloat(e.target.value) || 0 } : a)))}
+                        className="w-24 px-3.5 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditAddons((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="p-2 text-[#8E8E8A] hover:text-red-500 transition-colors"
+                        title="Remover adicional"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setEditAddons((prev) => [...prev, { id: `add-${Date.now()}`, label: '', price: 0 }])}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#D4AF37] text-[#B8943D] text-[11px] font-semibold hover:bg-[#D4AF37]/5 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Adicionar adicional
+                  </button>
                 </div>
 
                 <div className="pt-2">

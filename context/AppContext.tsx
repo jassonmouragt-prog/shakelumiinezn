@@ -47,14 +47,11 @@ interface AppContextType {
   cart: CartItem[];
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity?: number, selectedFlavor?: string) => void;
+  addToCart: (product: Product, quantity?: number, selectedFlavor?: string, selectedAddons?: string[]) => void;
   updateCartQuantity: (itemId: string, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   clearCart: () => void;
   cartSubtotal: number;
-  freeShippingThreshold: number;
-  amountToFreeShipping: number;
-  freeShippingProgress: number;
   
   // Orders
   orders: Order[];
@@ -90,8 +87,6 @@ interface AppContextType {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-
-const FREE_SHIPPING_LIMIT = 150.00;
 
 async function api<T = any>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -243,7 +238,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Cart actions
-  const addToCart = (product: Product, quantity = 1, selectedFlavor?: string) => {
+  const addToCart = (product: Product, quantity = 1, selectedFlavor?: string, selectedAddons?: string[]) => {
     const flavor = selectedFlavor || product.flavors[0] || 'Original';
     const existingIndex = cart.findIndex(
       (item) => item.product.id === product.id && item.selectedFlavor === flavor
@@ -258,7 +253,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         id: `${product.id}-${Date.now()}`,
         product,
         quantity,
-        selectedFlavor: flavor
+        selectedFlavor: flavor,
+        ...(selectedAddons?.length ? { selectedAddons } : {})
       };
       setCart((prev) => [...prev, newItem]);
     }
@@ -288,11 +284,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const cartSubtotal = cart.reduce((acc, item) => {
     const effectivePrice = item.product.promoPrice || item.product.price;
-    return acc + effectivePrice * item.quantity;
+    const addonsTotal = (item.selectedAddons ?? []).reduce((sum, id) => {
+      const addon = item.product.addons?.find((a) => a.id === id);
+      return sum + (addon ? addon.price : 0);
+    }, 0);
+    return acc + (effectivePrice + addonsTotal) * item.quantity;
   }, 0);
-
-  const amountToFreeShipping = Math.max(0, FREE_SHIPPING_LIMIT - cartSubtotal);
-  const freeShippingProgress = Math.min(100, (cartSubtotal / FREE_SHIPPING_LIMIT) * 100);
 
   // Orders
   const createOrder = (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>) => {
@@ -547,9 +544,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         removeFromCart,
         clearCart,
         cartSubtotal,
-        freeShippingThreshold: FREE_SHIPPING_LIMIT,
-        amountToFreeShipping,
-        freeShippingProgress,
         orders,
         createOrder,
         updateOrderStatus,

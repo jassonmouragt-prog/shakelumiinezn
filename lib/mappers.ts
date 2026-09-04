@@ -1,4 +1,4 @@
-import type { Product } from '@/types';
+import type { Product, ProductAddon } from '@/types';
 
 type ProductRow = {
   id: string;
@@ -21,6 +21,7 @@ type ProductRow = {
   ingredients: unknown;
   nutritional_info: unknown;
   benefits: unknown;
+  addons: unknown;
   stock: number;
   is_featured: boolean;
   show_in_showcase: boolean;
@@ -48,6 +49,7 @@ export function productFromRow(row: ProductRow): Product {
     ingredients: (row.ingredients as string[]) ?? [],
     nutritionalInfo: (row.nutritional_info as Product['nutritionalInfo']) ?? {},
     benefits: (row.benefits as string[]) ?? [],
+    addons: (row.addons as ProductAddon[]) ?? [],
     stock: row.stock,
     isFeatured: row.is_featured,
     showInShowcase: row.show_in_showcase

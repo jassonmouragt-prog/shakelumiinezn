@@ -1,3 +1,9 @@
+export interface ProductAddon {
+  id: string;
+  label: string;
+  price: number;
+}
+
 export type ProductCategory = 'todos' | 'shakes' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
 
 export interface Product {
@@ -28,6 +34,7 @@ export interface Product {
     sodium: string;
   };
   benefits: string[];
+  addons?: ProductAddon[];
   stock: number;
   isFeatured?: boolean;
   showInShowcase?: boolean; // Controle se aparece na vitrine/amostra do site

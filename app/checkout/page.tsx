@@ -10,8 +10,6 @@ import {
   AlertCircle,
   CreditCard,
   QrCode,
-  Truck,
-  MapPin,
   ShieldCheck,
   Sparkles,
   Copy,
@@ -26,21 +24,13 @@ import Footer from '@/components/Footer';
 export default function CheckoutPage() {
   const { cart, cartSubtotal, createOrder } = useApp();
 
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Form Fields
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    shippingMethod: 'entrega' as 'entrega' | 'retirada',
-    zipCode: '',
-    street: '',
-    number: '',
-    complement: '',
-    neighborhood: '',
-    city: '',
-    state: '',
     paymentMethod: 'pix' as 'pix' | 'cartao',
     cardNumber: '',
     cardName: '',
@@ -54,9 +44,8 @@ export default function CheckoutPage() {
   const [createdOrder, setCreatedOrder] = useState<Order | null>(null);
   const [copiedPix, setCopiedPix] = useState(false);
 
-  const shippingCost = formData.shippingMethod === 'retirada' ? 0 : 22.00;
   const discount = formData.resellerCode.toUpperCase() === 'PARCEIRO10' ? cartSubtotal * 0.10 : 0;
-  const finalTotal = cartSubtotal + shippingCost - discount;
+  const finalTotal = cartSubtotal - discount;
 
   const buildWhatsAppMessage = (order: Order) => {
     const lines: string[] = [];
@@ -67,32 +56,24 @@ export default function CheckoutPage() {
     lines.push('');
     lines.push('*Itens do Pedido:*');
     order.items.forEach((item, i) => {
-      const price = item.product.promoPrice || item.product.price;
+      const base = item.product.promoPrice || item.product.price;
+      const addons = (item.selectedAddons ?? [])
+        .map((id) => item.product.addons?.find((a) => a.id === id))
+        .filter((a): a is NonNullable<typeof a> => Boolean(a));
+      const addonsTotal = addons.reduce((sum, a) => sum + a.price, 0);
+      const addonsText = addons.map((a) => `+ ${a.label}`).join(', ');
       lines.push(
-        `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''} x${item.quantity} — R$ ${(price * item.quantity).toFixed(2).replace('.', ',')}`
+        `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''}${addonsText ? ` — ${addonsText}` : ''} x${item.quantity} — R$ ${((base + addonsTotal) * item.quantity).toFixed(2).replace('.', ',')}`
       );
     });
     lines.push('');
     lines.push(`*Subtotal:* R$ ${order.subtotal.toFixed(2).replace('.', ',')}`);
-    if (order.shippingMethod === 'retirada') {
-      lines.push('*Frete:* Grátis (Retirada em Lounge)');
-    } else {
-      lines.push(`*Frete:* R$ ${order.shippingCost.toFixed(2).replace('.', ',')}`);
-    }
     if (order.discount > 0) {
       lines.push(`*Desconto:* - R$ ${order.discount.toFixed(2).replace('.', ',')}`);
     }
     lines.push(`*Total:* R$ ${order.total.toFixed(2).replace('.', ',')}`);
     lines.push('');
     lines.push(`*Pagamento:* ${order.paymentMethod === 'pix' ? 'PIX' : 'Cartão de Crédito'}`);
-    if (order.shippingMethod === 'entrega') {
-      const a = order.address;
-      lines.push('');
-      lines.push('*Endereço de Entrega:*');
-      lines.push(`${a.street}, ${a.number}${a.complement ? ` - ${a.complement}` : ''}`);
-      lines.push(`${a.neighborhood}, ${a.city} - ${a.state}`);
-      lines.push(`CEP: ${a.zipCode}`);
-    }
     return lines.join('\n');
   };
 
@@ -105,22 +86,6 @@ export default function CheckoutPage() {
       }
       setStep(2);
     } else if (step === 2) {
-      if (formData.shippingMethod === 'entrega') {
-        const required = [
-          formData.zipCode,
-          formData.street,
-          formData.number,
-          formData.neighborhood,
-          formData.city,
-          formData.state
-        ];
-        if (required.some((v) => !v.trim())) {
-          setFormError('Preencha o endereço completo para entrega.');
-          return;
-        }
-      }
-      setStep(3);
-    } else if (step === 3) {
       if (!formData.name.trim()) {
         setFormError('Informe seu nome completo antes de enviar o pedido.');
         return;
@@ -134,16 +99,16 @@ export default function CheckoutPage() {
         customerEmail: formData.email,
         customerPhone: formData.phone,
         address: {
-          street: formData.street,
-          number: formData.number,
-          complement: formData.complement,
-          neighborhood: formData.neighborhood,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode
+          street: '',
+          number: '',
+          complement: '',
+          neighborhood: '',
+          city: '',
+          state: '',
+          zipCode: ''
         },
-        shippingMethod: formData.shippingMethod,
-        shippingCost,
+        shippingMethod: 'retirada',
+        shippingCost: 0,
         paymentMethod: formData.paymentMethod,
         items: cart,
         subtotal: cartSubtotal,
@@ -152,7 +117,7 @@ export default function CheckoutPage() {
         resellerCode: formData.resellerCode || undefined
       });
       setCreatedOrder(newOrder);
-      setStep(4);
+      setStep(3);
       window.open(
         `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(newOrder))}`,
         '_blank',
@@ -171,15 +136,14 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20">
         
-        {/* STEPPER HEADER (01 DADOS • 02 ENTREGA • 03 PAGAMENTO • 04 CONFIRMAÇÃO) */}
+        {/* STEPPER HEADER (01 DADOS • 02 PAGAMENTO • 03 CONFIRMAÇÃO) */}
         <div className="mb-10">
           <div className="flex items-center justify-between max-w-2xl mx-auto relative">
             <div className="absolute top-1/2 left-0 right-0 h-[1.5px] bg-[#E8E8E4] -translate-y-1/2 -z-0" />
             {[
               { num: 1, label: '01 DADOS' },
-              { num: 2, label: '02 ENTREGA' },
-              { num: 3, label: '03 PAGAMENTO' },
-              { num: 4, label: '04 CONFIRMAÇÃO' }
+              { num: 2, label: '02 PAGAMENTO' },
+              { num: 3, label: '03 CONFIRMAÇÃO' }
             ].map((s) => (
               <div key={s.num} className="flex flex-col items-center gap-1.5 relative z-10 bg-[#FAFAF8] px-2">
                 <div
@@ -203,8 +167,8 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* STEP 04: PEDIDO CONFIRMADO (SECTION 22) */}
-        {step === 4 && createdOrder ? (
+        {/* STEP 03: PEDIDO CONFIRMADO */}
+        {step === 3 && createdOrder ? (
           <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-8 sm:p-12 text-center max-w-2xl mx-auto shadow-md space-y-8 animate-fade-in">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FFFDF7] to-[#F5E7B2]/40 border border-[#D4AF37] flex items-center justify-center mx-auto text-[#C9A227] shadow-xs">
               <CheckCircle2 className="w-8 h-8" />
@@ -230,7 +194,7 @@ export default function CheckoutPage() {
             {/* TIMELINE CONFORME SEÇÃO 22 */}
             <div className="bg-[#FAFAF8] rounded-2xl border border-[#E8E8E4] p-6 text-left">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] mb-4">
-                Status do Envio em Tempo Real
+                Status do Pedido em Tempo Real
               </h4>
               <div className="space-y-4 text-xs">
                 <div className="flex items-center gap-3">
@@ -259,25 +223,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <strong className="text-[#C9A227]">Preparando com cuidado</strong>
-                    <span className="text-[#8E8E8A] ml-2">• Separação no centro de distribuição</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 opacity-50">
-                  <div className="w-6 h-6 rounded-full bg-white border border-[#D9D9D9] text-[#8E8E8A] flex items-center justify-center text-[10px]">
-                    ○
-                  </div>
-                  <div>
-                    <span>A caminho</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 opacity-50">
-                  <div className="w-6 h-6 rounded-full bg-white border border-[#D9D9D9] text-[#8E8E8A] flex items-center justify-center text-[10px]">
-                    ○
-                  </div>
-                  <div>
-                    <span>Entregue no endereço</span>
+                    <span className="text-[#8E8E8A] ml-2">• Separando seu pedido</span>
                   </div>
                 </div>
               </div>
@@ -350,120 +296,10 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* STEP 2: ENTREGA / RETIRADA */}
+              {/* STEP 2: PAGAMENTO (PIX / CARTÃO) */}
               {step === 2 && (
                 <div className="space-y-5 animate-fade-in">
-                  <h3 className="text-base font-bold text-[#1A1A1A]">02. Modalidade e Endereço</h3>
-                  
-                  {/* Entrega vs Retirada */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, shippingMethod: 'entrega' })}
-                      className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                        formData.shippingMethod === 'entrega'
-                          ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
-                          : 'bg-[#FAFAF8] text-[#5A5A58] border-[#E2E2DF]'
-                      }`}
-                    >
-                      <Truck className="w-4 h-4" />
-                      <span>Entrega no Endereço</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, shippingMethod: 'retirada' })}
-                      className={`p-3.5 rounded-2xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
-                        formData.shippingMethod === 'retirada'
-                          ? 'bg-[#1A1A1A] text-white border-[#1A1A1A]'
-                          : 'bg-[#FAFAF8] text-[#5A5A58] border-[#E2E2DF]'
-                      }`}
-                    >
-                      <MapPin className="w-4 h-4" />
-                      <span>Retirada em Lounge</span>
-                    </button>
-                  </div>
-
-                  {/* Endereço fields */}
-                  <div className="space-y-3 pt-2">
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-1">
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">CEP</label>
-                        <input
-                          type="text"
-                          value={formData.zipCode}
-                          onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Logradouro</label>
-                        <input
-                          type="text"
-                          value={formData.street}
-                          onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Número</label>
-                        <input
-                          type="text"
-                          value={formData.number}
-                          onChange={(e) => setFormData({ ...formData, number: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Complemento</label>
-                        <input
-                          type="text"
-                          value={formData.complement}
-                          onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Bairro</label>
-                        <input
-                          type="text"
-                          value={formData.neighborhood}
-                          onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Cidade</label>
-                        <input
-                          type="text"
-                          value={formData.city}
-                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Estado</label>
-                        <input
-                          type="text"
-                          value={formData.state}
-                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3: PAGAMENTO (PIX / CARTÃO) */}
-              {step === 3 && (
-                <div className="space-y-5 animate-fade-in">
-                  <h3 className="text-base font-bold text-[#1A1A1A]">03. Forma de Pagamento</h3>
+                  <h3 className="text-base font-bold text-[#1A1A1A]">02. Forma de Pagamento</h3>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -599,7 +435,7 @@ export default function CheckoutPage() {
                   onClick={handleNext}
                   className="px-8 py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 shadow-[0_4px_20px_rgba(201,162,39,0.25)] flex items-center gap-2"
                 >
-                  <span>{step === 3 ? 'FINALIZAR E PAGAR' : 'AVANÇAR'}</span>
+                  <span>{step === 2 ? 'FINALIZAR E PAGAR' : 'AVANÇAR'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -616,7 +452,15 @@ export default function CheckoutPage() {
                 {/* Items preview */}
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                   {cart.map((item) => {
-                    const price = item.product.promoPrice || item.product.price;
+                    const base = item.product.promoPrice || item.product.price;
+                    const addonsTotal = (item.selectedAddons ?? []).reduce(
+                      (sum, id) => sum + (item.product.addons?.find((a) => a.id === id)?.price ?? 0),
+                      0
+                    );
+                    const addonsLabels = (item.selectedAddons ?? [])
+                      .map((id) => item.product.addons?.find((a) => a.id === id)?.label)
+                      .filter(Boolean)
+                      .join(' • ');
                     return (
                       <div key={item.id} className="flex items-center gap-3 text-xs">
                         <div className="w-12 h-12 rounded-xl bg-[#FAFAF8] border border-[#E8E8E4] relative overflow-hidden flex-shrink-0">
@@ -625,9 +469,12 @@ export default function CheckoutPage() {
                         <div className="flex-1 min-w-0">
                           <h5 className="font-semibold text-[#1A1A1A] truncate">{item.product.name}</h5>
                           <span className="text-[11px] text-[#8E8E8A]">{item.quantity}x {item.selectedFlavor}</span>
+                          {addonsLabels && (
+                            <span className="block text-[11px] text-[#8E8E8A] truncate">{addonsLabels}</span>
+                          )}
                         </div>
                         <span className="font-bold text-[#1A1A1A]">
-                          R$ {(price * item.quantity).toFixed(2).replace('.', ',')}
+                          R$ {((base + addonsTotal) * item.quantity).toFixed(2).replace('.', ',')}
                         </span>
                       </div>
                     );
@@ -640,12 +487,6 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span className="font-medium text-[#1A1A1A]">
                       R$ {cartSubtotal.toFixed(2).replace('.', ',')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Frete</span>
-                    <span className="font-medium text-[#1A1A1A]">
-                      {shippingCost === 0 ? <strong className="text-[#B8943D]">Grátis</strong> : `R$ ${shippingCost.toFixed(2).replace('.', ',')}`}
                     </span>
                   </div>
                   {discount > 0 && (

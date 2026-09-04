@@ -44,6 +44,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         ingredients = ${JSON.stringify(merged.ingredients ?? [])},
         nutritional_info = ${JSON.stringify(merged.nutritionalInfo ?? {})},
         benefits = ${JSON.stringify(merged.benefits ?? [])},
+        addons = ${JSON.stringify(merged.addons ?? [])},
         stock = ${merged.stock},
         is_featured = ${merged.isFeatured ?? false},
         show_in_showcase = ${merged.showInShowcase ?? true}

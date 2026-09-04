@@ -5,7 +5,7 @@ import Image from 'next/image';
 import ProductImage from '@/components/ProductImage';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Star, Plus, Minus, Check, Sparkles, ShieldCheck, Heart, ArrowLeft, Truck, RefreshCw } from 'lucide-react';
+import { Star, Plus, Minus, Check, Sparkles, ShieldCheck, Heart, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import Footer from '@/components/Footer';
 
@@ -43,11 +43,7 @@ export default function SingleProductPage() {
     );
   }
 
-  const addonsList = [
-    { id: 'dosador', label: 'Dosador de Aço Dourado Colecionável (+ R$ 14,90)', price: 14.90 },
-    { id: 'colageno', label: 'Shot de Peptídeos Bioativos de Colágeno (+ R$ 19,90)', price: 19.90 },
-    { id: 'caixa', label: 'Embalagem Especial para Presente (+ R$ 9,90)', price: 9.90 }
-  ];
+  const productAddons = product.addons ?? [];
 
   const toggleAddon = (id: string) => {
     setSelectedAddons((prev) =>
@@ -56,7 +52,7 @@ export default function SingleProductPage() {
   };
 
   const addonsTotal = selectedAddons.reduce((acc, curr) => {
-    const found = addonsList.find((a) => a.id === curr);
+    const found = productAddons.find((a) => a.id === curr);
     return acc + (found ? found.price : 0);
   }, 0);
 
@@ -177,38 +173,42 @@ export default function SingleProductPage() {
               </div>
 
               {/* Adicionais Opcionais */}
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
-                  Adicionais de Experiência:
-                </label>
-                <div className="space-y-2">
-                  {addonsList.map((addon) => {
-                    const isChecked = selectedAddons.includes(addon.id);
-                    return (
-                      <div
-                        key={addon.id}
-                        onClick={() => toggleAddon(addon.id)}
-                        className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all text-xs ${
-                          isChecked
-                            ? 'bg-[#FFFDF7] border-[#D4AF37]'
-                            : 'bg-[#FAFAF8] border-[#E8E8E4] hover:border-[#D9D9D9]'
-                        }`}
-                      >
-                        <span className="text-[#3A3A38]">{addon.label}</span>
+              {productAddons.length > 0 && (
+                <div className="space-y-2 pt-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
+                    Adicionais:
+                  </label>
+                  <div className="space-y-2">
+                    {productAddons.map((addon) => {
+                      const isChecked = selectedAddons.includes(addon.id);
+                      return (
                         <div
-                          className={`w-4 h-4 rounded-md flex items-center justify-center border ${
+                          key={addon.id}
+                          onClick={() => toggleAddon(addon.id)}
+                          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all text-xs ${
                             isChecked
-                              ? 'bg-[#C9A227] border-[#C9A227] text-white'
-                              : 'border-[#C7C7C7] bg-white'
+                              ? 'bg-[#FFFDF7] border-[#D4AF37]'
+                              : 'bg-[#FAFAF8] border-[#E8E8E4] hover:border-[#D9D9D9]'
                           }`}
                         >
-                          {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                          <span className="text-[#3A3A38]">
+                            {addon.label} (+ R$ {addon.price.toFixed(2).replace('.', ',')})
+                          </span>
+                          <div
+                            className={`w-4 h-4 rounded-md flex items-center justify-center border ${
+                              isChecked
+                                ? 'bg-[#C9A227] border-[#C9A227] text-white'
+                                : 'border-[#C7C7C7] bg-white'
+                            }`}
+                          >
+                            {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Ações de Compra */}
@@ -233,7 +233,7 @@ export default function SingleProductPage() {
 
                 {/* Botão Principal ADICIONAR AO PEDIDO */}
                 <button
-                  onClick={() => addToCart(product, quantity, selectedFlavor)}
+                  onClick={() => addToCart(product, quantity, selectedFlavor, selectedAddons)}
                   className="flex-1 py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(201,162,39,0.3)] flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
@@ -242,15 +242,9 @@ export default function SingleProductPage() {
               </div>
 
               {/* Selos de Confiança */}
-              <div className="grid grid-cols-2 gap-3 pt-2 text-[11px] text-[#8E8E8A]">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-[#C9A227]" />
-                  <span>Frete cortesia a partir de R$ 150</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-[#C9A227]" />
-                  <span>Embalagem Hermética 100% Reciclável</span>
-                </div>
+              <div className="flex items-center gap-2 text-[11px] text-[#8E8E8A]">
+                <ShieldCheck className="w-4 h-4 text-[#C9A227] flex-shrink-0" />
+                <span>Embalagem Hermética 100% Reciclável</span>
               </div>
             </div>
 

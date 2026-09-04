@@ -18,7 +18,7 @@ export default function ClubSection() {
     {
       name: 'SILVER',
       points: '500 - 1.499 pts',
-      highlight: '5% de cashback em pontos e frete cortesia mensal.',
+      highlight: '5% de cashback em pontos e benefícios exclusivos mensais.',
       isGold: false
     },
     {

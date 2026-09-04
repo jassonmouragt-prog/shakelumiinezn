@@ -49,6 +49,7 @@ CREATE TABLE products (
   ingredients      JSONB NOT NULL DEFAULT '[]',
   nutritional_info JSONB NOT NULL DEFAULT '{}',
   benefits         JSONB NOT NULL DEFAULT '[]',
+  addons           JSONB NOT NULL DEFAULT '[]',
   stock            INTEGER NOT NULL DEFAULT 0,
   is_featured      BOOLEAN NOT NULL DEFAULT false,
   show_in_showcase BOOLEAN NOT NULL DEFAULT true,

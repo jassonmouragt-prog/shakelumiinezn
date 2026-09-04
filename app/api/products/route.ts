@@ -31,7 +31,8 @@ export async function POST(req: Request) {
       INSERT INTO products (
         id, slug, name, subtitle, description, price, promo_price, reseller_price,
         category, badge, image, gallery, rating, reviews_count, weight, servings,
-        flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase
+        flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase,
+        addons
       ) VALUES (
         ${id}, ${slug}, ${body.name}, ${body.subtitle}, ${body.description},
         ${body.price}, ${body.promoPrice ?? null}, ${body.resellerPrice},
@@ -40,7 +41,8 @@ export async function POST(req: Request) {
         ${body.weight}, ${body.servings}, ${JSON.stringify(body.flavors ?? [])},
         ${JSON.stringify(body.ingredients ?? [])}, ${JSON.stringify(body.nutritionalInfo ?? {})},
         ${JSON.stringify(body.benefits ?? [])}, ${body.stock},
-        ${body.isFeatured ?? false}, ${body.showInShowcase ?? true}
+        ${body.isFeatured ?? false}, ${body.showInShowcase ?? true},
+        ${JSON.stringify(body.addons ?? [])}
       )
     `;
     return Response.json({ id, slug }, { status: 201 });

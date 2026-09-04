@@ -70,7 +70,12 @@ export default function CartDrawer() {
               </div>
             ) : (
               cart.map((item) => {
-                const itemPrice = item.product.promoPrice || item.product.price;
+                const itemBase = item.product.promoPrice || item.product.price;
+                const addonsTotal = (item.selectedAddons ?? []).reduce(
+                  (sum, id) => sum + (item.product.addons?.find((a) => a.id === id)?.price ?? 0),
+                  0
+                );
+                const itemPrice = itemBase + addonsTotal;
                 return (
                   <div
                     key={item.id}
@@ -94,6 +99,14 @@ export default function CartDrawer() {
                         <p className="text-[11px] text-[#8E8E8A] mt-0.5">
                           Sabor: <span className="text-[#3A3A38]">{item.selectedFlavor}</span>
                         </p>
+                        {item.selectedAddons && item.selectedAddons.length > 0 && (
+                          <p className="text-[11px] text-[#8E8E8A] mt-0.5 line-clamp-1">
+                            {item.selectedAddons
+                              .map((id) => item.product.addons?.find((a) => a.id === id)?.label)
+                              .filter(Boolean)
+                              .join(' • ')}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center justify-between mt-2">
@@ -156,10 +169,6 @@ export default function CartDrawer() {
                     R$ {cartSubtotal.toFixed(2).replace('.', ',')}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Frete estimado</span>
-                  <span className="font-medium text-[#B8943D]">Calculado no checkout</span>
-                </div>
               </div>
 
               <div className="pt-2 border-t border-[#E8E8E4] flex justify-between items-baseline">
@@ -180,7 +189,7 @@ export default function CartDrawer() {
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#8E8E8A]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#C9A227]" />
-                <span>Compra protegida • Entrega expressa com rastreio</span>
+                <span>Compra protegida</span>
               </div>
             </div>
           )}

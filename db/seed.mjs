@@ -161,9 +161,8 @@ async function main() {
   }
   const rewards = [
     ['rew-1', 'R$ 15 OFF na Próxima Compra', 400, 15, 'Desconto direto no carrinho em qualquer shake ou combo.', 'discount', 'MAIS POPULAR'],
-    ['rew-2', 'Frete Cortesia Express', 650, 24.9, 'Frete grátis sem valor mínimo de pedido para qualquer região.', 'shipping', 'ESSENCIAL'],
-    ['rew-3', 'R$ 40 OFF no Pedido', 1000, 40, 'Abatimento especial para membros dedicados.', 'discount', null],
-    ['rew-4', 'Shake Vanilla Bourbon 600g Grátis', 1500, 69.9, 'Resgate um pote inteiro de presente 100% gratuito.', 'product', 'EXCLUSIVO GOLD']
+    ['rew-2', 'R$ 40 OFF no Pedido', 1000, 40, 'Abatimento especial para membros dedicados.', 'discount', null],
+    ['rew-3', 'Shake Vanilla Bourbon 600g Grátis', 1500, 69.9, 'Resgate um pote inteiro de presente 100% gratuito.', 'product', 'EXCLUSIVO GOLD']
   ];
   for (const [id, title, pr, dv, desc, type, badge] of rewards) {
     await sql`

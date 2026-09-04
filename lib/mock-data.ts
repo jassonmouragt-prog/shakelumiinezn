@@ -113,15 +113,6 @@ export const INITIAL_LOYALTY_REWARDS: LoyaltyReward[] = [
   },
   {
     id: 'rew-2',
-    title: 'Frete Cortesia Express',
-    pointsRequired: 650,
-    discountValue: 24.90,
-    description: 'Frete grátis sem valor mínimo de pedido para qualquer região.',
-    type: 'shipping',
-    badge: 'ESSENCIAL'
-  },
-  {
-    id: 'rew-3',
     title: 'R$ 40 OFF no Pedido',
     pointsRequired: 1000,
     discountValue: 40.00,
@@ -129,7 +120,7 @@ export const INITIAL_LOYALTY_REWARDS: LoyaltyReward[] = [
     type: 'discount'
   },
   {
-    id: 'rew-4',
+    id: 'rew-3',
     title: 'Shake Vanilla Bourbon 600g Grátis',
     pointsRequired: 1500,
     discountValue: 69.90,
