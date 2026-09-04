@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   Product,
   CartItem,
@@ -97,6 +97,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const FREE_SHIPPING_LIMIT = 150.00;
 
+async function api<T = any>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) }
+  });
+  if (!res.ok) {
+    let msg = 'Erro na requisição';
+    try {
+      const data = await res.json();
+      msg = data?.error || msg;
+    } catch {}
+    throw new Error(msg);
+  }
+  return res.json() as Promise<T>;
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
@@ -106,39 +122,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [loyalty, setLoyalty] = useState<LoyaltyAccount>(INITIAL_LOYALTY_ACCOUNT);
-  const [loyaltyRewards] = useState<LoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
+  const [loyaltyRewards, setLoyaltyRewards] = useState<LoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
   const [resellers, setResellers] = useState<Reseller[]>(INITIAL_RESELLERS);
   const [commissions, setCommissions] = useState<ResellerCommission[]>(INITIAL_RESELLER_COMMISSIONS);
   const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>(INITIAL_STOCK_MOVEMENTS);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // Load from LocalStorage if available
+  // Load cart from LocalStorage (sessão)
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem('lumiine_cart');
       if (savedCart) setCart(JSON.parse(savedCart));
-      
-      const savedOrders = localStorage.getItem('lumiine_orders');
-      if (savedOrders) setOrders(JSON.parse(savedOrders));
-
-      const savedProducts = localStorage.getItem('lumiine_products');
-      if (savedProducts) setProducts(JSON.parse(savedProducts));
-
-      const savedExpenses = localStorage.getItem('lumiine_expenses');
-      if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
-
-      const savedMovements = localStorage.getItem('lumiine_stock_movements');
-      if (savedMovements) setStockMovements(JSON.parse(savedMovements));
-
-      const savedLoyalty = localStorage.getItem('lumiine_loyalty');
-      if (savedLoyalty) setLoyalty(JSON.parse(savedLoyalty));
-
-      const savedAdminAuth = localStorage.getItem('lumiine_admin_auth');
-      if (savedAdminAuth === 'true') setIsAdminAuthenticated(true);
-
-      const savedRole = localStorage.getItem('lumiine_role');
-      if (savedRole) setCurrentRole(savedRole as UserRole);
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
@@ -153,6 +148,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart]);
 
+  // Load role from LocalStorage
+  useEffect(() => {
+    try {
+      const savedRole = localStorage.getItem('lumiine_role');
+      if (savedRole) setCurrentRole(savedRole as UserRole);
+    } catch {}
+  }, []);
+
+  // Hydrate from API after mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [prods, ords, res, comms, exps, moves, loy] = await Promise.all([
+          api('/api/products').catch(() => null),
+          api('/api/orders').catch(() => null),
+          api('/api/resellers').catch(() => null),
+          api('/api/commissions').catch(() => null),
+          api('/api/expenses').catch(() => null),
+          api('/api/stock').catch(() => null),
+          api('/api/loyalty').catch(() => null)
+        ]);
+        if (cancelled) return;
+        if (prods) setProducts(prods);
+        if (ords) setOrders(ords);
+        if (res) setResellers(res);
+        if (comms) setCommissions(comms);
+        if (exps) setExpenses(exps);
+        if (moves) setStockMovements(moves);
+        if (loy?.account) {
+          setLoyalty(loy.account);
+          setLoyaltyRewards(loy.rewards || INITIAL_LOYALTY_REWARDS);
+        }
+      } catch (e) {
+        console.warn('API hydrate error:', e);
+      }
+    })();
+
+    // Check session
+    (async () => {
+      try {
+        const me = await api<{ user: { role: string } | null }>('/api/auth/me');
+        if (me?.user) {
+          setIsAdminAuthenticated(true);
+          setCurrentRole('admin');
+        }
+      } catch {}
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Toast handler
   const showToast = (title: string, message: string, type: Toast['type'] = 'gold') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -166,32 +215,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Admin Auth
-  const loginAdmin = (email: string, pass: string): boolean => {
-    // Standard credential validation (allows demo access easily)
-    if (email.trim().toLowerCase() === 'admin@lumiine.com' && pass === 'admin123') {
-      setIsAdminAuthenticated(true);
-      setCurrentRole('admin');
+  // Admin Auth (real, via API)
+  const loginAdmin = useCallback((email: string, pass: string): boolean => {
+    (async () => {
       try {
-        localStorage.setItem('lumiine_admin_auth', 'true');
-      } catch (e) {
-        console.warn(e);
+        const res = await api<{ user: { role: string } }>('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email, password: pass })
+        });
+        if (res?.user?.role) {
+          setIsAdminAuthenticated(true);
+          setCurrentRole('admin');
+          showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
+        }
+      } catch (e: any) {
+        setIsAdminAuthenticated(false);
+        showToast('Falha no Login', e?.message || 'Credenciais inválidas.', 'info');
       }
-      showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
-      return true;
-    }
-    showToast('Falha no Login', 'Credenciais inválidas. Use admin@lumiine.com / admin123', 'info');
-    return false;
-  };
+    })();
+    return true;
+  }, []);
 
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
     setCurrentRole('customer');
     try {
       localStorage.removeItem('lumiine_admin_auth');
-    } catch (e) {
-      console.warn(e);
-    }
+    } catch {}
+    api('/api/auth/logout', { method: 'POST' }).catch(() => {});
     showToast('Sessão Encerrada', 'Você saiu do Painel Administrativo.', 'info');
   };
 
@@ -261,16 +312,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const updatedOrders = [newOrder, ...orders];
     setOrders(updatedOrders);
-    try {
-      localStorage.setItem('lumiine_orders', JSON.stringify(updatedOrders));
-    } catch (e) {
-      console.warn(e);
-    }
 
-    // Earn loyalty points
-    addLoyaltyPoints(newOrder.pointsEarned, `Compra Pedido ${newOrder.code}`);
-    
-    // Clear cart
+    // Persistir no banco
+    api('/api/orders', { method: 'POST', body: JSON.stringify(orderData) })
+      .then(async (saved: any) => {
+        // Reajusta code/id com o retornado do servidor
+        if (saved?.id && saved?.code) {
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.id === newOrder.id
+                ? { ...o, id: saved.id, code: saved.code, createdAt: saved.createdAt, pointsEarned: saved.pointsEarned }
+                : o
+            )
+          );
+        }
+        // Atualiza pontos de fidelidade
+        const loy = await api<{ account: LoyaltyAccount }>('/api/loyalty', {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'points',
+            points: saved?.pointsEarned ?? newOrder.pointsEarned,
+            description: `Compra Pedido ${saved?.code ?? newOrder.code}`
+          })
+        }).catch(() => null);
+        if (loy?.account) setLoyalty(loy.account);
+      })
+      .catch(() => {});
+
     clearCart();
     setIsCartOpen(false);
 
@@ -279,50 +347,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    setOrders((prev) => {
-      const updated = prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
-      try {
-        localStorage.setItem('lumiine_orders', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+    api(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: newStatus })
+    }).catch(() => {});
     showToast('Status Atualizado', `Pedido atualizado para: ${newStatus.toUpperCase()}`, 'info');
   };
 
   // Loyalty Points
-  const addLoyaltyPoints = (points: number, description: string) => {
-    setLoyalty((prev) => {
-      const newPoints = Math.max(0, prev.points + points);
-      let newTier = prev.tier;
-      if (newPoints >= 3000) newTier = 'Platinum';
-      else if (newPoints >= 1500) newTier = 'Gold';
-      else if (newPoints >= 500) newTier = 'Silver';
-      else newTier = 'Bronze';
-
-      const newTx = {
-        id: `tx-${Date.now()}`,
-        date: new Date().toLocaleDateString('pt-BR'),
-        description,
-        points,
-        type: (points >= 0 ? 'credit' : 'debit') as 'credit' | 'debit'
-      };
-
-      const updated = {
-        ...prev,
-        points: newPoints,
-        tier: newTier,
-        transactions: [newTx, ...prev.transactions]
-      };
-      try {
-        localStorage.setItem('lumiine_loyalty', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
-  };
+  const addLoyaltyPoints = useCallback((points: number, description: string) => {
+    api<{ account: LoyaltyAccount }>('/api/loyalty', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'points', points, description })
+    })
+      .then((res) => {
+        if (res?.account) setLoyalty(res.account);
+      })
+      .catch(() => {});
+  }, []);
 
   const redeemReward = (rewardId: string): boolean => {
     const reward = loyaltyRewards.find((r) => r.id === rewardId);
@@ -332,8 +375,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return false;
     }
 
-    addLoyaltyPoints(-reward.pointsRequired, `Resgate de benefício: ${reward.title}`);
-    showToast('Benefício Resgatado!', `${reward.title} adicionado à sua conta com sucesso.`, 'gold');
+    api<{ account: LoyaltyAccount }>('/api/loyalty', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'redeem', rewardId })
+    })
+      .then((res) => {
+        if (res?.account) setLoyalty(res.account);
+        showToast('Benefício Resgatado!', `${reward.title} adicionado à sua conta com sucesso.`, 'gold');
+      })
+      .catch((e: any) => {
+        showToast('Resgate não concluído', e?.message || 'Erro ao resgatar benefício.', 'info');
+      });
+
     return true;
   };
 
@@ -354,13 +407,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     setResellers((prev) => [newReseller, ...prev]);
+    api('/api/resellers', { method: 'POST', body: JSON.stringify(data) }).catch(() => {});
     showToast('Inscrição Recebida!', 'Seus dados foram enviados e estão sob análise da nossa equipe.', 'gold');
   };
 
   const updateResellerStatus = (resellerId: string, status: Reseller['status']) => {
-    setResellers((prev) =>
-      prev.map((r) => (r.id === resellerId ? { ...r, status } : r))
-    );
+    setResellers((prev) => prev.map((r) => (r.id === resellerId ? { ...r, status } : r)));
+    api(`/api/resellers/${resellerId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    }).catch(() => {});
     showToast('Revendedor Atualizado', `Status alterado para: ${status.toUpperCase()}`, 'info');
   };
 
@@ -375,37 +431,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
     const updated = [created, ...products];
     setProducts(updated);
-    try {
-      localStorage.setItem('lumiine_products', JSON.stringify(updated));
-    } catch (e) {
-      console.warn(e);
-    }
+    api('/api/products', { method: 'POST', body: JSON.stringify(newProd) }).catch(() => {});
     showToast('Produto Cadastrado', `${newProd.name} foi adicionado ao catálogo.`, 'gold');
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts((prev) => {
-      const updated = prev.map((p) => (p.id === id ? { ...p, ...updates } : p));
-      try {
-        localStorage.setItem('lumiine_products', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
+    api(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }).catch(() => {});
     showToast('Produto Atualizado', 'Alterações salvas com sucesso.', 'info');
   };
 
   const deleteProduct = (id: string) => {
-    setProducts((prev) => {
-      const updated = prev.filter((p) => p.id !== id);
-      try {
-        localStorage.setItem('lumiine_products', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    api(`/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
     showToast('Produto Removido', 'Item excluído do catálogo.', 'info');
   };
 
@@ -419,15 +457,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             `${p.name} foi ${newState ? 'incluído nas amostras' : 'removido das amostras'} públicas.`,
             'gold'
           );
+          setTimeout(() => {
+            const target = updated.find((x) => x.id === id);
+            api(`/api/products/${id}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ showInShowcase: newState })
+            }).catch(() => {});
+          }, 0);
           return { ...p, showInShowcase: newState };
         }
         return p;
       });
-      try {
-        localStorage.setItem('lumiine_products', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
       return updated;
     });
   };
@@ -438,28 +478,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...expData,
       id: `exp-${Date.now()}`
     };
-    setExpenses((prev) => {
-      const updated = [newExp, ...prev];
-      try {
-        localStorage.setItem('lumiine_expenses', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setExpenses((prev) => [newExp, ...prev]);
+    api('/api/expenses', { method: 'POST', body: JSON.stringify(expData) }).catch(() => {});
     showToast('Despesa Registrada', `Lançamento de R$ ${expData.amount.toFixed(2)} contabilizado.`, 'gold');
   };
 
   const deleteExpense = (id: string) => {
-    setExpenses((prev) => {
-      const updated = prev.filter((e) => e.id !== id);
-      try {
-        localStorage.setItem('lumiine_expenses', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    api(`/api/expenses/${id}`, { method: 'DELETE' }).catch(() => {});
     showToast('Despesa Removida', 'Lançamento excluído com sucesso.', 'info');
   };
 
@@ -471,35 +497,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       date: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     };
 
-    setStockMovements((prev) => {
-      const updated = [newMovement, ...prev];
-      try {
-        localStorage.setItem('lumiine_stock_movements', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    setStockMovements((prev) => [newMovement, ...prev]);
 
-    // Automatically update product stock
-    setProducts((prev) => {
-      const updated = prev.map((p) => {
-        if (p.id === movData.productId) {
-          const newQty =
-            movData.type === 'entrada'
-              ? p.stock + movData.quantity
-              : Math.max(0, p.stock - movData.quantity);
-          return { ...p, stock: newQty };
-        }
-        return p;
-      });
-      try {
-        localStorage.setItem('lumiine_products', JSON.stringify(updated));
-      } catch (e) {
-        console.warn(e);
-      }
-      return updated;
-    });
+    // Update local product stock optimistically
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === movData.productId
+          ? {
+              ...p,
+              stock:
+                movData.type === 'entrada'
+                  ? p.stock + movData.quantity
+                  : Math.max(0, p.stock - movData.quantity)
+            }
+          : p
+      )
+    );
+
+    api('/api/stock', { method: 'POST', body: JSON.stringify(movData) }).catch(() => {});
 
     showToast(
       movData.type === 'entrada' ? 'Entrada de Estoque' : 'Saída de Estoque',
@@ -518,9 +533,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setCurrentRole(role);
           try {
             localStorage.setItem('lumiine_role', role);
-          } catch (e) {
-            console.warn(e);
-          }
+          } catch {}
         },
         isAdminAuthenticated,
         loginAdmin,
