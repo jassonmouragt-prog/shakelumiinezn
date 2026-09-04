@@ -10,6 +10,44 @@ import {
   StockMovement
 } from '@/types';
 
+export const NEUTRAL_LOYALTY_ACCOUNT: LoyaltyAccount = {
+  userId: '',
+  userName: '',
+  userEmail: '',
+  points: 0,
+  tier: 'Bronze',
+  nextTierPoints: 0,
+  totalSaved: 0,
+  referralCode: '',
+  referralLink: '',
+  referralCount: 0,
+  referralPointsEarned: 0,
+  transactions: []
+};
+
+export const NEUTRAL_RESELLER: Reseller = {
+  id: '',
+  name: 'Revendedor',
+  document: '',
+  email: '',
+  phone: '',
+  city: '',
+  state: '',
+  instagram: '',
+  activityType: '',
+  salesExperience: '',
+  discoverySource: '',
+  status: 'pendente',
+  referralCode: '',
+  totalSales: 0,
+  totalOrders: 0,
+  totalCommission: 0,
+  pendingCommission: 0,
+  approvedCommission: 0,
+  paidCommission: 0,
+  registeredAt: ''
+};
+
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'prod-1',

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingBag, User, Menu, X, Sparkles, ChevronRight, Award, Briefcase, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, User, Menu, X, Sparkles, ChevronRight, Award, Briefcase } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export default function Navbar() {
@@ -85,22 +85,13 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {currentRole === 'admin' && (
-                <Link
-                  href="/admin"
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-[#1A1A1A] text-white border border-[#333] hover:bg-[#2A2A2A] transition-all"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  Painel Admin
-                </Link>
-              )}
               {/* Enter / Member Area */}
               <Link
-                href={currentRole === 'admin' ? '/admin' : '/revendedor'}
+                href="/revendedor"
                 className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-medium tracking-wider text-[#3A3A38] hover:text-[#C9A227] transition-colors"
               >
                 <User className="w-3.5 h-3.5 text-[#8E8E8A]" />
-                {currentRole === 'admin' ? 'Admin' : 'Área do Revendedor'}
+                Área do Revendedor
               </Link>
 
               {/* Cart Trigger */}

@@ -16,13 +16,9 @@ import {
 } from '@/types';
 import {
   INITIAL_PRODUCTS,
-  INITIAL_ORDERS,
-  INITIAL_LOYALTY_ACCOUNT,
   INITIAL_LOYALTY_REWARDS,
-  INITIAL_RESELLERS,
-  INITIAL_RESELLER_COMMISSIONS,
-  INITIAL_EXPENSES,
-  INITIAL_STOCK_MOVEMENTS
+  NEUTRAL_LOYALTY_ACCOUNT,
+  NEUTRAL_RESELLER
 } from '@/lib/mock-data';
 
 interface Toast {
@@ -120,13 +116,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [loyalty, setLoyalty] = useState<LoyaltyAccount>(INITIAL_LOYALTY_ACCOUNT);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loyalty, setLoyalty] = useState<LoyaltyAccount>(NEUTRAL_LOYALTY_ACCOUNT);
   const [loyaltyRewards, setLoyaltyRewards] = useState<LoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
-  const [resellers, setResellers] = useState<Reseller[]>(INITIAL_RESELLERS);
-  const [commissions, setCommissions] = useState<ResellerCommission[]>(INITIAL_RESELLER_COMMISSIONS);
-  const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES);
-  const [stockMovements, setStockMovements] = useState<StockMovement[]>(INITIAL_STOCK_MOVEMENTS);
+  const [resellers, setResellers] = useState<Reseller[]>([]);
+  const [commissions, setCommissions] = useState<ResellerCommission[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Load cart from LocalStorage (sessão)
@@ -523,7 +519,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const currentReseller = resellers[0];
+  const currentReseller = resellers[0] ?? NEUTRAL_RESELLER;
 
   return (
     <AppContext.Provider

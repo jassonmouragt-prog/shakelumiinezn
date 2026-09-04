@@ -3,7 +3,7 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { UserRole } from '@/types';
-import { Sparkles, Briefcase, ShieldCheck, User } from 'lucide-react';
+import { Sparkles, Briefcase, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -33,13 +33,6 @@ export default function RoleSwitcher() {
       icon: Briefcase,
       badge: currentReseller.status.toUpperCase(),
       link: '/revendedor'
-    },
-    {
-      role: 'admin',
-      label: 'Painel Admin',
-      icon: ShieldCheck,
-      badge: 'Gerência',
-      link: '/admin'
     }
   ];
 
@@ -55,8 +48,7 @@ export default function RoleSwitcher() {
           const isSelected =
             (idx === 0 && currentRole === 'customer' && !isClube) ||
             (idx === 1 && isClube) ||
-            (idx === 2 && currentRole === 'reseller') ||
-            (idx === 3 && currentRole === 'admin');
+            (idx === 2 && currentRole === 'reseller');
 
           return (
             <Link
