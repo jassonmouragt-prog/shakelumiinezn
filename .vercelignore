@@ -1,0 +1,12 @@
+# Fontes de trabalho na raiz (não vão para o deploy)
+hype drink - product animation 3d.mov
+hype drink - product animation 3d_1.mov
+screen-capture.mp4
+3d product.png
+hype drink - product animation 3d.mov/*
+
+# Diretórios de desenvolvimento
+node_modules
+.next
+.git
+.vercel

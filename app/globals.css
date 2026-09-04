@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-main: #FFFFFF;
+    --bg-cream: #FAFAF8;
+    --bg-soft: #F8F8F6;
+    --bg-muted: #F5F5F3;
+    
+    --gold-primary: #C9A227;
+    --gold-bright: #D4AF37;
+    --gold-dark: #B8943D;
+    
+    --silver-light: #EBEBEA;
+    --silver-primary: #D9D9D9;
+    --silver-mid: #C7C7C7;
+    --silver-dark: #B5B5B5;
+    
+    --text-primary: #1A1A1A;
+    --text-secondary: #5A5A58;
+    --text-muted: #8E8E8A;
+  }
+
+  body {
+    background-color: var(--bg-cream);
+    color: var(--text-primary);
+    font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  /* Smooth scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #FAFAF8;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D9D9D9;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #C9A227;
+  }
+}
+
+/* Metallic Gradients */
+.gold-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #F5E7B2 50%, #B8943D 100%);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C9A227 0%, #E6C86E 50%, #B8943D 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.silver-gradient-border {
+  border-color: #E2E2DF;
+}
+
+.silver-shimmer {
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 70%);
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(220, 220, 215, 0.7);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(230, 230, 225, 0.85);
+}
+
+.gold-glow {
+  box-shadow: 0 10px 40px -10px rgba(212, 175, 55, 0.22);
+}
+
+.gold-glow-subtle {
+  box-shadow: 0 4px 20px -2px rgba(212, 175, 55, 0.12);
+}
+
+.silver-glow {
+  box-shadow: 0 10px 30px -5px rgba(199, 199, 199, 0.25);
+}
+
+.card-hover-elevation {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover-elevation:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.06), 0 0 20px -5px rgba(212, 175, 55, 0.12);
+}
+
+/* Hero Halo Animation */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0.8deg);
+  }
+}
+
+@keyframes pulseGoldGlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGoldGlow 4s ease-in-out infinite;
+}
+
+/* Marquee / Infinite Ticker Animations */
+@keyframes marqueeLeft {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marqueeRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft 34s linear infinite;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marqueeRight 38s linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover {
+  animation-play-state: paused;
+}
+
