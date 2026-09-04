@@ -72,9 +72,9 @@ export default function ResellerPortalPage() {
 
           {/* Link Exclusivo do Revendedor (Section 38) */}
           <div className="w-full md:w-auto p-3 rounded-2xl bg-[#FAFAF8] border border-[#D4AF37]/50 flex items-center justify-between gap-3 text-xs">
-            <div className="space-y-0.5">
+            <div className="min-w-0 space-y-0.5">
               <span className="text-[10px] font-bold uppercase text-[#8E8E8A] block">Seu Link de Afiliado</span>
-              <span className="font-mono font-bold text-[#B8943D]">{resellerLink}</span>
+              <span className="font-mono font-bold text-[#B8943D] block truncate">{resellerLink}</span>
             </div>
             <button
               onClick={copyLink}
@@ -197,11 +197,11 @@ export default function ResellerPortalPage() {
                   Produtos Mais Vendidos na Sua Rede
                 </h4>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FAFAF8] text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 rounded-2xl bg-[#FAFAF8] text-xs">
                     <span className="font-semibold text-[#1A1A1A]">1. Shake Vanilla Bourbon & Amêndoas Douradas</span>
                     <span className="text-[#8E8E8A]">24 unidades vendidas • Margem gerada: R$ 480,00</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-2xl bg-[#FAFAF8] text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 p-3 rounded-2xl bg-[#FAFAF8] text-xs">
                     <span className="font-semibold text-[#1A1A1A]">2. Shake Cacao Noir & Raw Coconut</span>
                     <span className="text-[#8E8E8A]">18 unidades vendidas • Margem gerada: R$ 360,00</span>
                   </div>
@@ -278,10 +278,10 @@ export default function ResellerPortalPage() {
                       <div className="w-24 h-24 rounded-2xl bg-white border border-[#E8E8E4] p-2 relative flex-shrink-0">
                         <ProductImage src={product.image} alt={product.name} />
                       </div>
-                      <div className="space-y-1">
+                      <div className="min-w-0 space-y-1">
                         <span className="text-[10px] font-bold text-[#B8943D] uppercase">MARGEM ATRATIVA</span>
                         <h4 className="text-sm font-bold text-[#1A1A1A]">{product.name}</h4>
-                        <div className="flex items-center gap-3 text-xs pt-1">
+                        <div className="flex flex-wrap items-center gap-3 text-xs pt-1">
                           <span>Consumidor: <strong>R$ {product.price.toFixed(2)}</strong></span>
                           <span className="text-[#C9A227] font-bold">Revenda: R$ {unitResellerPrice.toFixed(2)}</span>
                         </div>

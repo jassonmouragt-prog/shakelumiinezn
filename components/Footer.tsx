@@ -33,7 +33,7 @@ export default function Footer() {
               href="https://instagram.com"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
               aria-label="Instagram"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ export default function Footer() {
               href="https://facebook.com"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
               aria-label="Facebook"
             >
               <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -55,7 +55,7 @@ export default function Footer() {
               href="https://whatsapp.com"
               target="_blank"
               rel="noreferrer"
-              className="w-9 h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
+              className="w-11 h-11 sm:w-9 sm:h-9 rounded-full border border-[#E2E2DF] flex items-center justify-center text-[#5A5A58] hover:text-[#C9A227] hover:border-[#D4AF37] transition-colors"
               aria-label="WhatsApp"
             >
               <MessageCircle className="w-4 h-4" />

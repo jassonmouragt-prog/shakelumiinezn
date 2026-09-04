@@ -169,7 +169,7 @@ export default function ResellerProgramPage() {
               <div className="pt-4 flex justify-center gap-3">
                 <Link
                   href="/revendedor"
-                  className="px-6 py-3 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-[#2A2A2A]"
+                  className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 rounded-full bg-[#1A1A1A] text-white text-xs font-bold hover:bg-[#2A2A2A]"
                 >
                   Ver Simulação do Portal do Revendedor →
                 </Link>

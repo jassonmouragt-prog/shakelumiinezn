@@ -95,18 +95,18 @@ export default function SingleProductPage() {
             </div>
 
             {/* Thumbnails */}
-            <div className="flex items-center gap-3">
-              {product.gallery.map((img, i) => (
+            <div className="flex items-center gap-3 overflow-x-auto pb-1">
+              {product.gallery.filter((img) => img).map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-20 h-20 rounded-2xl bg-[#FAFAF8] border p-2 relative overflow-hidden transition-all ${
+                  className={`w-20 h-20 rounded-2xl bg-[#FAFAF8] border p-2 relative overflow-hidden transition-all flex-shrink-0 ${
                     selectedImage === img
                       ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20'
                       : 'border-[#E2E2DF] hover:border-[#C7C7C7]'
                   }`}
                 >
-                  <Image src={img} alt="Miniatura" fill className="object-contain p-1" />
+                  <Image src={img} alt="Miniatura" fill unoptimized className="object-contain p-1" />
                 </button>
               ))}
             </div>
