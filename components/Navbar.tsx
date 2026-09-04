@@ -9,7 +9,7 @@ import { useApp } from '@/context/AppContext';
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { cart, setIsCartOpen, currentRole, loyalty } = useApp();
+  const { cart, setIsCartOpen, currentRole, isResellerAuthenticated, resellerProfile } = useApp();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -74,25 +74,24 @@ export default function Navbar() {
 
             {/* ACTION BUTTONS */}
             <div className="flex items-center gap-3">
-              {/* Role badge if not customer */}
-              {currentRole === 'reseller' && (
+              {/* Reseller link / status */}
+              {isResellerAuthenticated ? (
                 <Link
                   href="/revendedor"
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-[#FAFAF8] border border-[#D4AF37]/40 text-[#B8943D] hover:bg-[#F8F8F6] transition-all"
+                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#FFFDF7] border border-[#D4AF37] text-[#B8943D] hover:bg-[#FDFBF2] transition-all"
                 >
                   <Briefcase className="w-3.5 h-3.5 text-[#C9A227]" />
-                  Portal Revendedor
+                  <span>{resellerProfile?.name ? `Olá, ${resellerProfile.name.split(' ')[0]}` : 'Portal Revendedor'}</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/revendedor"
+                  className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-medium tracking-wider text-[#3A3A38] hover:text-[#C9A227] transition-colors"
+                >
+                  <User className="w-3.5 h-3.5 text-[#8E8E8A]" />
+                  Área do Revendedor
                 </Link>
               )}
-
-              {/* Enter / Member Area */}
-              <Link
-                href="/revendedor"
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-medium tracking-wider text-[#3A3A38] hover:text-[#C9A227] transition-colors"
-              >
-                <User className="w-3.5 h-3.5 text-[#8E8E8A]" />
-                Área do Revendedor
-              </Link>
 
               {/* Cart Trigger */}
               <button

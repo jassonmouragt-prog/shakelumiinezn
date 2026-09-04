@@ -1,66 +1,18 @@
 import { getSql } from '@/lib/db';
+import { hashPassword } from '@/lib/password';
+import { resellerFromRow, ResellerRow } from '@/lib/resellers';
 import type { Reseller } from '@/types';
-
-type ResellerRow = {
-  id: string;
-  name: string;
-  document: string;
-  email: string;
-  phone: string;
-  city: string;
-  state: string;
-  instagram: string;
-  activity_type: string;
-  sales_experience: string;
-  discovery_source: string;
-  notes: string | null;
-  status: string;
-  referral_code: string;
-  total_sales: number;
-  total_orders: number;
-  total_commission: number;
-  pending_commission: number;
-  approved_commission: number;
-  paid_commission: number;
-  registered_at: string;
-};
-
-function fromRow(r: ResellerRow): Reseller {
-  return {
-    id: r.id,
-    name: r.name,
-    document: r.document,
-    email: r.email,
-    phone: r.phone,
-    city: r.city,
-    state: r.state,
-    instagram: r.instagram,
-    activityType: r.activity_type,
-    salesExperience: r.sales_experience,
-    discoverySource: r.discovery_source,
-    notes: r.notes ?? undefined,
-    status: r.status as Reseller['status'],
-    referralCode: r.referral_code,
-    totalSales: r.total_sales,
-    totalOrders: r.total_orders,
-    totalCommission: r.total_commission,
-    pendingCommission: r.pending_commission,
-    approvedCommission: r.approved_commission,
-    paidCommission: r.paid_commission,
-    registeredAt: r.registered_at
-  };
-}
 
 type SubmitInput = Omit<
   Reseller,
   'id' | 'status' | 'referralCode' | 'totalSales' | 'totalOrders' | 'totalCommission' |
   'pendingCommission' | 'approvedCommission' | 'paidCommission' | 'registeredAt'
->;
+> & { password?: string };
 
 export async function GET() {
   try {
     const rows = (await getSql()`SELECT * FROM resellers ORDER BY id`) as unknown as ResellerRow[];
-    return Response.json(rows.map(fromRow));
+    return Response.json(rows.map(resellerFromRow));
   } catch (e) {
     console.error('GET /api/resellers error:', e);
     return Response.json({ error: 'Erro ao buscar revendedores' }, { status: 500 });
@@ -81,6 +33,40 @@ export async function POST(req: Request) {
   const registeredAt = new Date().toLocaleDateString('pt-BR');
 
   try {
+    if (body.password) {
+      if (body.password.length < 6) {
+        return Response.json(
+          { error: 'A senha deve ter pelo menos 6 caracteres' },
+          { status: 400 }
+        );
+      }
+      if (!body.email || !body.email.trim()) {
+        return Response.json({ error: 'Email obrigatório' }, { status: 400 });
+      }
+
+      const userId = `usr-${Date.now()}`;
+      const passwordHash = await hashPassword(body.password);
+
+      try {
+        await getSql()`
+          INSERT INTO users (id, name, email, password_hash, role, reseller_id)
+          VALUES (
+            ${userId}, ${body.name}, ${body.email.trim().toLowerCase()},
+            ${passwordHash}, 'revendedor', ${id}
+          )
+        `;
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg.includes('unique') || msg.includes('duplicate')) {
+          return Response.json(
+            { error: 'Já existe uma conta com este email' },
+            { status: 409 }
+          );
+        }
+        throw e;
+      }
+    }
+
     await getSql()`
       INSERT INTO resellers (
         id, name, document, email, phone, city, state, instagram, activity_type,
@@ -91,7 +77,7 @@ export async function POST(req: Request) {
         ${id}, ${body.name}, ${body.document}, ${body.email}, ${body.phone},
         ${body.city}, ${body.state}, ${body.instagram}, ${body.activityType},
         ${body.salesExperience}, ${body.discoverySource}, ${body.notes ?? null},
-        'pendente', ${referralCode}, 0, 0, 0, 0, 0, 0, ${registeredAt}
+        'aprovado', ${referralCode}, 0, 0, 0, 0, 0, 0, ${registeredAt}
       )
     `;
     return Response.json({ id, referralCode, registeredAt }, { status: 201 });

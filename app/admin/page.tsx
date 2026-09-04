@@ -52,6 +52,7 @@ export default function AdminPanelPage() {
     resellers,
     commissions,
     updateResellerStatus,
+    registerReseller,
     expenses,
     addExpense,
     deleteExpense,
@@ -143,6 +144,43 @@ export default function AdminPanelPage() {
   const [stockMovQty, setStockMovQty] = useState('20');
   const [stockMovReason, setStockMovReason] = useState<StockMovementReason>('Lote de Fábrica');
   const [stockMovResponsible, setStockMovResponsible] = useState('Controle de Operações');
+
+  // Modal: Cadastrar Acesso de Revendedor
+  const [showAddResellerModal, setShowAddResellerModal] = useState(false);
+  const [resellerFormName, setResellerFormName] = useState('');
+  const [resellerFormEmail, setResellerFormEmail] = useState('');
+  const [resellerFormPhone, setResellerFormPhone] = useState('');
+  const [resellerFormCity, setResellerFormCity] = useState('');
+  const [resellerFormState, setResellerFormState] = useState('');
+  const [resellerFormPass, setResellerFormPass] = useState('');
+  const [resellerSubmitting, setResellerSubmitting] = useState(false);
+  const [resellerFormError, setResellerFormError] = useState('');
+
+  const handleRegisterReseller = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResellerFormError('');
+    setResellerSubmitting(true);
+    const result = await registerReseller({
+      name: resellerFormName,
+      email: resellerFormEmail,
+      phone: resellerFormPhone,
+      city: resellerFormCity,
+      state: resellerFormState,
+      password: resellerFormPass
+    });
+    setResellerSubmitting(false);
+    if (!result.ok) {
+      setResellerFormError(result.error || 'Erro ao cadastrar revendedor.');
+      return;
+    }
+    setShowAddResellerModal(false);
+    setResellerFormName('');
+    setResellerFormEmail('');
+    setResellerFormPhone('');
+    setResellerFormCity('');
+    setResellerFormState('');
+    setResellerFormPass('');
+  };
 
   // Handle Admin Login
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -834,9 +872,18 @@ export default function AdminPanelPage() {
         {/* TAB 6: REVENDEDORES & COMISSÕES */}
         {activeTab === 'revendedores' && (
           <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-6 sm:p-8 shadow-xs animate-fade-in space-y-6">
-            <div>
-              <h3 className="text-base font-bold text-[#1A1A1A]">Parceiros Revendedores e Comissões</h3>
-              <p className="text-xs text-[#8E8E8A]">Aprove novas candidaturas de revendedores e audite volumes de repasse.</p>
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <h3 className="text-base font-bold text-[#1A1A1A]">Parceiros Revendedores e Comissões</h3>
+                <p className="text-xs text-[#8E8E8A]">Cadastre acessos, aprove novas candidaturas de revendedores e audite volumes de repasse.</p>
+              </div>
+              <button
+                onClick={() => setShowAddResellerModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold hover:brightness-105 shadow-[0_4px_20px_rgba(201,162,39,0.25)] transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Cadastrar Revendedor</span>
+              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -892,6 +939,115 @@ export default function AdminPanelPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: CADASTRO DE REVENDEDOR (ACESSO EXCLUSIVO) */}
+        {showAddResellerModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-8 max-w-md w-full shadow-2xl space-y-5 animate-scale">
+              <div className="border-b border-[#F0F0EC] pb-3">
+                <h3 className="text-base font-bold text-[#1A1A1A]">Cadastrar Revendedor</h3>
+                <p className="text-xs text-[#8E8E8A]">Cria o registro do parceiro e a conta de acesso exclusiva da Área do Revendedor.</p>
+              </div>
+
+              <form onSubmit={handleRegisterReseller} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Nome Completo *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Mariana Duarte"
+                    value={resellerFormName}
+                    onChange={(e) => setResellerFormName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Email (Login) *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="revendedor@email.com"
+                    value={resellerFormEmail}
+                    onChange={(e) => setResellerFormEmail(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">Senha de Acesso *</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder="Mínimo 6 caracteres"
+                    value={resellerFormPass}
+                    onChange={(e) => setResellerFormPass(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">WhatsApp</label>
+                    <input
+                      type="text"
+                      placeholder="(11) 99999-9999"
+                      value={resellerFormPhone}
+                      onChange={(e) => setResellerFormPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-[#5A5A58] mb-1">Cidade</label>
+                    <input
+                      type="text"
+                      placeholder="São Paulo"
+                      value={resellerFormCity}
+                      onChange={(e) => setResellerFormCity(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-[#5A5A58] mb-1">UF</label>
+                  <input
+                    type="text"
+                    placeholder="SP"
+                    maxLength={2}
+                    value={resellerFormState}
+                    onChange={(e) => setResellerFormState(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A]"
+                  />
+                </div>
+
+                {resellerFormError && (
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-[11px] text-red-600">
+                    {resellerFormError}
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddResellerModal(false)}
+                    className="flex-1 py-2.5 rounded-full border border-[#E2E2DF] text-[#5A5A58] text-xs font-bold hover:bg-[#FAFAF8] transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resellerSubmitting}
+                    className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold hover:brightness-105 shadow-[0_4px_20px_rgba(201,162,39,0.25)] transition-all disabled:opacity-50"
+                  >
+                    {resellerSubmitting ? 'Cadastrando...' : 'Cadastrar Acesso'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

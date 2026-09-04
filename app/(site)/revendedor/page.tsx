@@ -16,22 +16,49 @@ import {
   AlertCircle,
   Plus,
   ArrowRight,
-  Filter
+  Filter,
+  LogOut,
+  Lock
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { INITIAL_RESELLER_CLIENTS } from '@/lib/mock-data';
 import Footer from '@/components/Footer';
 
 export default function ResellerPortalPage() {
-  const { currentReseller, commissions, products, addToCart } = useApp();
+  const {
+    currentReseller,
+    resellerProfile,
+    isResellerAuthenticated,
+    loginReseller,
+    logoutReseller,
+    commissions,
+    products,
+    addToCart
+  } = useApp();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'loja' | 'comissoes' | 'clientes'>('dashboard');
   const [copiedLink, setCopiedLink] = useState(false);
   const [selectedBatchQty, setSelectedBatchQty] = useState<Record<string, number>>({
     'menu-shake-pave-trufado': 10,
     'menu-shake-churros': 10
   });
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
-  const resellerLink = `https://lumiine.com/r/${currentReseller.referralCode}`;
+  const portalReseller = resellerProfile ?? currentReseller;
+  const resellerLink = `https://lumiine.com/r/${portalReseller.referralCode}`;
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    const result = await loginReseller(loginEmail, loginPass);
+    setLoginLoading(false);
+    if (!result.ok) {
+      setLoginError(result.error || 'Credenciais inválidas.');
+    }
+  };
 
   const copyLink = () => {
     navigator.clipboard.writeText(resellerLink);
@@ -50,19 +77,97 @@ export default function ResellerPortalPage() {
 
   const maxSale = Math.max(...monthlySalesData.map((d) => d.sales));
 
+  // ÁREA EXCLUSIVA: LOGIN DO REVENDEDOR
+  if (!isResellerAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
+        <div className="max-w-md mx-auto px-4 w-full pb-20">
+          <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-8 sm:p-10 shadow-sm space-y-6 animate-fade-in">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-full border border-[#D4AF37]/50 flex items-center justify-center bg-[#FAFAF8] mx-auto text-[#C9A227] shadow-xs">
+                <Lock className="w-6 h-6" />
+              </div>
+              <div className="inline-block px-3 py-1 rounded-full bg-[#FAFAF8] border border-[#D4AF37]/30 text-[9.5px] font-bold tracking-widest text-[#B8943D] uppercase">
+                ÁREA EXCLUSIVA DO REVENDEDOR
+              </div>
+              <h1 className="text-2xl font-sans font-bold text-[#1A1A1A]">
+                Portal do Revendedor
+              </h1>
+              <p className="text-xs text-[#8E8E8A]">
+                Acesse com as credenciais fornecidas pela Lumiine para pedidos no atacado,
+                comissões e link exclusivo de afiliado.
+              </p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Email do Revendedor</label>
+                <input
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#5A5A58] mb-1">Senha de Acesso</label>
+                <input
+                  type="password"
+                  required
+                  value={loginPass}
+                  onChange={(e) => setLoginPass(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#FAFAF8] border border-[#E2E2DF] text-xs text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37]"
+                />
+              </div>
+
+              {loginError && (
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-[11px] text-red-600">
+                  {loginError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 shadow-[0_4px_20px_rgba(201,162,39,0.3)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Lock className="w-4 h-4" />
+                <span>{loginLoading ? 'Entrando...' : 'ENTRAR NA ÁREA EXCLUSIVA'}</span>
+              </button>
+            </form>
+
+            <div className="pt-2 text-center text-xs text-[#8E8E8A]">
+              Ainda não é revendedor?{' '}
+              <Link href="/revenda" className="text-[#C9A227] font-semibold hover:underline">
+                Solicite sua vaga
+              </Link>
+              {' '}ou{' '}
+              <Link href="/" className="hover:text-[#C9A227] transition-colors">
+                retorne à loja
+              </Link>
+              .
+            </div>
+          </div>
+        </div>
+
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-20">
-        
-        {/* HEADER DO PORTAL (Section 36) */}
         <div className="bg-white rounded-[32px] border border-[#E8E8E4] p-6 sm:p-10 shadow-xs mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-sans font-bold text-[#1A1A1A]">
-                Olá, {currentReseller.name}
+                Olá, {portalReseller.name}
               </h1>
               <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 border border-emerald-300 text-emerald-700">
-                Parceiro {currentReseller.status.toUpperCase()}
+                Parceiro {portalReseller.status.toUpperCase()}
               </span>
             </div>
             <p className="text-xs text-[#8E8E8A]">
@@ -71,17 +176,26 @@ export default function ResellerPortalPage() {
           </div>
 
           {/* Link Exclusivo do Revendedor (Section 38) */}
-          <div className="w-full md:w-auto p-3 rounded-2xl bg-[#FAFAF8] border border-[#D4AF37]/50 flex items-center justify-between gap-3 text-xs">
-            <div className="min-w-0 space-y-0.5">
-              <span className="text-[10px] font-bold uppercase text-[#8E8E8A] block">Seu Link de Afiliado</span>
-              <span className="font-mono font-bold text-[#B8943D] block truncate">{resellerLink}</span>
+          <div className="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex-1 sm:flex-none p-3 rounded-2xl bg-[#FAFAF8] border border-[#D4AF37]/50 flex items-center justify-between gap-3 text-xs">
+              <div className="min-w-0 space-y-0.5">
+                <span className="text-[10px] font-bold uppercase text-[#8E8E8A] block">Seu Link de Afiliado</span>
+                <span className="font-mono font-bold text-[#B8943D] block truncate">{resellerLink}</span>
+              </div>
+              <button
+                onClick={copyLink}
+                className="px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D9D9] text-[#1A1A1A] font-semibold hover:border-[#D4AF37] flex items-center gap-1.5 text-xs shadow-2xs"
+              >
+                <Copy className="w-3.5 h-3.5 text-[#C9A227]" />
+                <span>{copiedLink ? 'Copiado!' : 'Copiar'}</span>
+              </button>
             </div>
             <button
-              onClick={copyLink}
-              className="px-3.5 py-1.5 rounded-xl bg-white border border-[#D9D9D9] text-[#1A1A1A] font-semibold hover:border-[#D4AF37] flex items-center gap-1.5 text-xs shadow-2xs"
+              onClick={logoutReseller}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl border border-red-200 text-red-600 hover:bg-red-50 text-xs font-semibold transition-colors"
             >
-              <Copy className="w-3.5 h-3.5 text-[#C9A227]" />
-              <span>{copiedLink ? 'Copiado!' : 'Copiar'}</span>
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sair</span>
             </button>
           </div>
         </div>
@@ -95,7 +209,7 @@ export default function ResellerPortalPage() {
               <TrendingUp className="w-4 h-4 text-[#C9A227]" />
             </div>
             <div className="text-2xl sm:text-3xl font-serif font-bold text-[#1A1A1A]">
-              R$ {currentReseller.totalSales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {portalReseller.totalSales.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
             <span className="text-[11px] text-emerald-600 font-semibold">+34% vs mês anterior</span>
           </div>
@@ -106,9 +220,9 @@ export default function ResellerPortalPage() {
               <DollarSign className="w-4 h-4 text-[#C9A227]" />
             </div>
             <div className="text-2xl sm:text-3xl font-serif font-bold text-[#B8943D]">
-              R$ {currentReseller.totalCommission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {portalReseller.totalCommission.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
-            <span className="text-[11px] text-[#5A5A58]">R$ {currentReseller.pendingCommission.toFixed(2)} a liberar</span>
+            <span className="text-[11px] text-[#5A5A58]">R$ {portalReseller.pendingCommission.toFixed(2)} a liberar</span>
           </div>
 
           <div className="bg-white rounded-3xl p-6 border border-[#E8E8E4] shadow-xs space-y-2">
@@ -117,7 +231,7 @@ export default function ResellerPortalPage() {
               <Package className="w-4 h-4 text-[#C9A227]" />
             </div>
             <div className="text-2xl sm:text-3xl font-serif font-bold text-[#1A1A1A]">
-              {currentReseller.totalOrders}
+              {portalReseller.totalOrders}
             </div>
             <span className="text-[11px] text-[#8E8E8A]">Ticket médio R$ 353,50</span>
           </div>
@@ -217,7 +331,7 @@ export default function ResellerPortalPage() {
                 <div className="p-4 rounded-2xl bg-[#FFFDF7] border border-[#D4AF37]/40 space-y-1">
                   <span className="text-[10px] uppercase font-bold text-[#B8943D]">Aprovada para Saque</span>
                   <div className="text-xl font-bold text-[#1A1A1A]">
-                    R$ {currentReseller.approvedCommission.toFixed(2).replace('.', ',')}
+                    R$ {portalReseller.approvedCommission.toFixed(2).replace('.', ',')}
                   </div>
                   <span className="text-[11px] text-[#8E8E8A]">Próximo pagamento: 10/09/2026</span>
                 </div>
@@ -225,14 +339,14 @@ export default function ResellerPortalPage() {
                 <div className="p-4 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-1">
                   <span className="text-[10px] uppercase font-bold text-[#8E8E8A]">Pendente (Período de garantia)</span>
                   <div className="text-lg font-bold text-[#5A5A58]">
-                    R$ {currentReseller.pendingCommission.toFixed(2).replace('.', ',')}
+                    R$ {portalReseller.pendingCommission.toFixed(2).replace('.', ',')}
                   </div>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-1">
                   <span className="text-[10px] uppercase font-bold text-[#8E8E8A]">Total Já Pago</span>
                   <div className="text-lg font-bold text-emerald-700">
-                    R$ {currentReseller.paidCommission.toFixed(2).replace('.', ',')}
+                    R$ {portalReseller.paidCommission.toFixed(2).replace('.', ',')}
                   </div>
                 </div>
               </div>

@@ -32,9 +32,22 @@ interface AppContextType {
   // Role & User
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
+  currentUser: { id: string; name: string; email: string; role: string } | null;
   isAdminAuthenticated: boolean;
+  isResellerAuthenticated: boolean;
+  resellerProfile: Reseller | null;
   loginAdmin: (email: string, pass: string) => boolean;
   logoutAdmin: () => void;
+  loginReseller: (email: string, pass: string) => Promise<{ ok: boolean; error?: string }>;
+  logoutReseller: () => void;
+  registerReseller: (input: {
+    name: string;
+    email: string;
+    phone?: string;
+    city?: string;
+    state?: string;
+    password: string;
+  }) => Promise<{ ok: boolean; error?: string; referralCode?: string }>;
   
   // Products
   products: Product[];
@@ -107,6 +120,14 @@ async function api<T = any>(url: string, options?: RequestInit): Promise<T> {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [isResellerAuthenticated, setIsResellerAuthenticated] = useState<boolean>(false);
+  const [resellerProfile, setResellerProfile] = useState<Reseller | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  } | null>(null);
 
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -139,7 +160,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart]);
 
-  // Load role from LocalStorage
+  // Load role from LocalStorage (legacy demo only)
   useEffect(() => {
     try {
       const savedRole = localStorage.getItem('lumiine_role');
@@ -180,10 +201,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Check session
     (async () => {
       try {
-        const me = await api<{ user: { role: string } | null }>('/api/auth/me');
+        const me = await api<{ user: { id: string; name: string; email: string; role: string } | null }>('/api/auth/me');
         if (me?.user) {
-          setIsAdminAuthenticated(true);
-          setCurrentRole('admin');
+          setCurrentUser(me.user);
+          if (me.user.role === 'admin') {
+            setIsAdminAuthenticated(true);
+            setCurrentRole('admin');
+          } else if (me.user.role === 'revendedor') {
+            setIsResellerAuthenticated(true);
+            setCurrentRole('reseller');
+            api<{ reseller: Reseller | null }>('/api/resellers/me')
+              .then((r) => {
+                if (r?.reseller) setResellerProfile(r.reseller);
+              })
+              .catch(() => {});
+          }
         }
       } catch {}
     })();
@@ -210,13 +242,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const loginAdmin = useCallback((email: string, pass: string): boolean => {
     (async () => {
       try {
-        const res = await api<{ user: { role: string } }>('/api/auth/login', {
+        const res = await api<{ user: { id: string; name: string; email: string; role: string } }>('/api/auth/login', {
           method: 'POST',
           body: JSON.stringify({ email, password: pass })
         });
-        if (res?.user?.role) {
+        if (res?.user?.role === 'admin') {
           setIsAdminAuthenticated(true);
           setCurrentRole('admin');
+          setCurrentUser(res.user);
           showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
         }
       } catch (e: any) {
@@ -230,12 +263,83 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
     setCurrentRole('customer');
+    setCurrentUser(null);
     try {
       localStorage.removeItem('lumiine_admin_auth');
     } catch {}
     api('/api/auth/logout', { method: 'POST' }).catch(() => {});
     showToast('Sessão Encerrada', 'Você saiu do Painel Administrativo.', 'info');
   };
+
+  const loginReseller = useCallback(
+    async (email: string, pass: string): Promise<{ ok: boolean; error?: string }> => {
+      try {
+        const res = await api<{ user: { id: string; name: string; email: string; role: string } }>(
+          '/api/resellers/login',
+          { method: 'POST', body: JSON.stringify({ email, password: pass }) }
+        );
+        if (res?.user?.role !== 'revendedor') {
+          return { ok: false, error: 'Credenciais inválidas.' };
+        }
+        setCurrentUser(res.user);
+        setIsResellerAuthenticated(true);
+        setCurrentRole('reseller');
+        const profile = await api<{ reseller: Reseller | null }>('/api/resellers/me').catch(() => null);
+        if (profile?.reseller) setResellerProfile(profile.reseller);
+        return { ok: true };
+      } catch (e: any) {
+        return { ok: false, error: e?.message || 'Credenciais inválidas.' };
+      }
+    },
+    []
+  );
+
+  const logoutReseller = () => {
+    setIsResellerAuthenticated(false);
+    setResellerProfile(null);
+    setCurrentUser(null);
+    setCurrentRole('customer');
+    api('/api/auth/logout', { method: 'POST' }).catch(() => {});
+    showToast('Sessão Encerrada', 'Você saiu da Área do Revendedor.', 'info');
+  };
+
+  const registerReseller = useCallback(
+    async (input: {
+      name: string;
+      email: string;
+      phone?: string;
+      city?: string;
+      state?: string;
+      password: string;
+    }): Promise<{ ok: boolean; error?: string; referralCode?: string }> => {
+      const body = {
+        name: input.name,
+        document: '',
+        email: input.email,
+        phone: input.phone || '',
+        city: input.city || '',
+        state: input.state || '',
+        instagram: '',
+        activityType: '',
+        salesExperience: '',
+        discoverySource: '',
+        notes: undefined,
+        password: input.password
+      };
+      try {
+        const created = await api<{ id: string; referralCode: string }>('/api/resellers', {
+          method: 'POST',
+          body: JSON.stringify(body)
+        });
+        const fresh = await api<Reseller[]>('/api/resellers').catch(() => null);
+        if (fresh) setResellers(fresh);
+        return { ok: true, referralCode: created.referralCode };
+      } catch (e: any) {
+        return { ok: false, error: e?.message || 'Erro ao cadastrar revendedor.' };
+      }
+    },
+    []
+  );
 
   // Cart actions
   const addToCart = (product: Product, quantity = 1, selectedFlavor?: string, selectedAddons?: string[]) => {
@@ -541,9 +645,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('lumiine_role', role);
           } catch {}
         },
+        currentUser,
         isAdminAuthenticated,
+        isResellerAuthenticated,
+        resellerProfile,
         loginAdmin,
         logoutAdmin,
+        loginReseller,
+        logoutReseller,
+        registerReseller,
         products,
         addProduct,
         updateProduct,

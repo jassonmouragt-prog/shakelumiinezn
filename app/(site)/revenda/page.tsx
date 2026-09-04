@@ -311,7 +311,7 @@ export default function ResellerProgramPage() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[#F0F0EC]">
+              <div className="pt-4 border-t border-[#F0F0EC] space-y-3">
                 <button
                   type="submit"
                   className="w-full py-4 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 shadow-[0_4px_20px_rgba(201,162,39,0.25)] flex items-center justify-center gap-2"
@@ -319,6 +319,12 @@ export default function ResellerProgramPage() {
                   <Send className="w-4 h-4" />
                   <span>ENVIAR SOLICITAÇÃO DE CADASTRO</span>
                 </button>
+                <p className="text-center text-xs text-[#8E8E8A]">
+                  Já é um revendedor credenciado?{' '}
+                  <Link href="/revendedor" className="text-[#C9A227] font-semibold hover:underline">
+                    Acessar Área Exclusiva →
+                  </Link>
+                </p>
               </div>
             </form>
           )}

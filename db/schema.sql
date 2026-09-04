@@ -22,6 +22,7 @@ CREATE TABLE users (
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role          TEXT NOT NULL DEFAULT 'customer',
+  reseller_id   TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
