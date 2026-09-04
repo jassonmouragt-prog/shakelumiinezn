@@ -13,6 +13,7 @@ Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon
 - Vars de ambiente configuradas na Vercel (Production): `DATABASE_URL` (pooled) e `SESSION_SECRET`.
 - `.env.local` local contém `DATABASE_URL` + `SESSION_SECRET` (ignorado pelo git). Seed: `npm run db:seed` (usa `sql.query` para o schema — o driver Neon v2 exige `sql.query(stmt)` e NÃO aceita `sql(stmt)`/`sql.unsafe` para execução de strings).
 - Testado em produção: `/`, `/admin`, `/api/products` (4), `/api/orders` (3), `/api/auth/login` (admin) — todos OK contra o Neon.
+- **Favicon e título da aba**: favicon substituído pelo emblema da logo (`app/icon.png` 512 + `app/apple-icon.png` 180; `app/favicon.ico` default removido). Título da aba: `SHAKELUMIINEZN | Shakes Naturais & Nutrição de Alta Performance` (em `app/layout.tsx`).
 - Hero usa vídeo com transparência:
   - Chrome/Firefox/Edge: components/LazyHeroVideo.tsx -> <video> nativo com public/images/produto-3d.webm (VP9 + alpha nativo, loop via onEnded).
   - Safari: components/CanvasVideoKey.tsx -> processa public/images/produto-3d-fallback.mp4 por frame (removendo fundo cinza por saturação) num canvas, dando transparência real.
