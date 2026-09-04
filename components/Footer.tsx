@@ -64,7 +64,7 @@ export default function Footer() {
         </div>
 
         {/* 5 COLUNAS ESPECIFICADAS NA SEÇÃO 59 */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 py-12 border-b border-[#F0F0EC] text-xs">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-b border-[#F0F0EC] text-xs">
           
           {/* MARCA */}
           <div className="space-y-3">
@@ -114,30 +114,6 @@ export default function Footer() {
               <li>
                 <Link href="/produtos?cat=novidades" className="hover:text-[#C9A227] transition-colors">
                   Novidades
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* QUALIDADE & DIFERENCIAIS */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-[11px] tracking-wider text-[#1A1A1A] uppercase">
-              QUALIDADE
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/#sobre-nos" className="hover:text-[#C9A227] transition-colors">
-                  Pureza Botânica
-                </Link>
-              </li>
-              <li>
-                <Link href="/#sobre-nos" className="hover:text-[#C9A227] transition-colors">
-                  Padrão Farmacopeico
-                </Link>
-              </li>
-              <li>
-                <Link href="/#sobre-nos" className="hover:text-[#C9A227] transition-colors">
-                  Clean Label 100%
                 </Link>
               </li>
             </ul>
