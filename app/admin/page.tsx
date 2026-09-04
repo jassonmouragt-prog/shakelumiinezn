@@ -506,7 +506,6 @@ export default function AdminPanelPage() {
                     <th className="py-3 px-2">Cliente / Contato</th>
                     <th className="py-3 px-2">Itens</th>
                     <th className="py-3 px-2">Valor</th>
-                    <th className="py-3 px-2">Pagamento</th>
                     <th className="py-3 px-2">Status do Pedido</th>
                   </tr>
                 </thead>
@@ -522,7 +521,6 @@ export default function AdminPanelPage() {
                         {order.items.map((it) => `${it.quantity}x ${it.product.name.split(' ')[1] || 'Shake'}`).join(', ')}
                       </td>
                       <td className="py-3.5 px-2 font-bold text-[#1A1A1A]">R$ {order.total.toFixed(2).replace('.', ',')}</td>
-                      <td className="py-3.5 px-2 uppercase font-semibold text-[#5A5A58]">{order.paymentMethod}</td>
                       <td className="py-3.5 px-2">
                         <select
                           value={order.status}

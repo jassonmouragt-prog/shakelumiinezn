@@ -299,7 +299,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: `ord-${newCodeNumber}`,
       code: `#${newCodeNumber}`,
       createdAt: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      status: 'pago',
+      status: 'pendente',
       pointsEarned: Math.floor(orderData.total)
     };
 
@@ -319,16 +319,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             )
           );
         }
-        // Atualiza pontos de fidelidade
-        const loy = await api<{ account: LoyaltyAccount }>('/api/loyalty', {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'points',
-            points: saved?.pointsEarned ?? newOrder.pointsEarned,
-            description: `Compra Pedido ${saved?.code ?? newOrder.code}`
-          })
-        }).catch(() => null);
-        if (loy?.account) setLoyalty(loy.account);
+        // Atualiza pontos de fidelidade apenas quando o admin confirmar (status → pago)
+        if (saved?.pointsEarned && saved.pointsEarned > 0) {
+          setOrders((prev) =>
+            prev.map((o) =>
+              o.id === newOrder.id
+                ? { ...o, pointsEarned: saved.pointsEarned }
+                : o
+            )
+          );
+        }
       })
       .catch(() => {});
 
@@ -340,11 +340,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
+    const current = orders.find((o) => o.id === orderId);
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
     api(`/api/orders/${orderId}`, {
       method: 'PATCH',
       body: JSON.stringify({ status: newStatus })
     }).catch(() => {});
+    if (newStatus === 'pago' && current && current.status !== 'pago') {
+      const points = current.pointsEarned || Math.floor(current.total);
+      api<{ account: LoyaltyAccount }>('/api/loyalty', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'points', points, description: `Compra Pedido ${current.code}` })
+      })
+        .then((res) => {
+          if (res?.account) setLoyalty(res.account);
+          showToast('Pontos Creditados', `${points} pontos adicionados na conta de fidelidade.`, 'gold');
+        })
+        .catch(() => {});
+    }
     showToast('Status Atualizado', `Pedido atualizado para: ${newStatus.toUpperCase()}`, 'info');
   };
 

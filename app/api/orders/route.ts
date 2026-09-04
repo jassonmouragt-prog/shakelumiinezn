@@ -151,7 +151,7 @@ export async function POST(req: Request) {
         ${id}, ${code}, ${body.customerName}, ${body.customerEmail},
         ${body.customerPhone}, ${JSON.stringify(body.address)},
         ${body.shippingMethod}, ${body.shippingCost}, ${body.paymentMethod},
-        'pago', ${body.subtotal}, ${body.discount}, ${body.total},
+        'pendente', ${body.subtotal}, ${body.discount}, ${body.total},
         ${pointsEarned}, ${body.resellerCode ?? null}, ${createdAtStr}
       )
     `;
