@@ -9,7 +9,7 @@ import { ProductCategory, Product } from '@/types';
 import Footer from '@/components/Footer';
 
 export default function MarketplacePage() {
-  const { products, addToCart } = useApp();
+  const { products, addToCart, isLoading } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('todos');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
@@ -18,24 +18,27 @@ export default function MarketplacePage() {
   const categories: { key: ProductCategory; label: string }[] = [
     { key: 'todos', label: 'Todos os Produtos' },
     { key: 'shakes', label: 'Shakes Puros' },
-    { key: 'combos', label: 'Combos Especiais' },
-    { key: 'kits', label: 'Kits com Acessórios' },
-    { key: 'novidades', label: 'Novidades' },
-    { key: 'mais-vendidos', label: 'Mais Vendidos' }
+    { key: 'bebidas', label: 'Bebidas Funcionais' },
+    { key: 'salgados', label: 'Salgados & Refeições' },
+    { key: 'mais-vendidos', label: 'Mais Vendidos' },
+    { key: 'novidades', label: 'Novidades' }
   ];
 
   // Filtering
   const filteredProducts = products.filter((p) => {
     const matchesCategory =
       selectedCategory === 'todos' ||
-      (selectedCategory === 'novidades' && p.badge === 'NOVO') ||
-      (selectedCategory === 'mais-vendidos' && p.badge === 'MAIS VENDIDO') ||
+      (selectedCategory === 'novidades' && (p.badge === 'NOVO' || (p as any).isFeatured)) ||
+      (selectedCategory === 'mais-vendidos' && (p.badge === 'MAIS VENDIDO' || p.rating >= 4.9)) ||
       p.category === selectedCategory;
 
+    const query = searchQuery.toLowerCase().trim();
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.flavors.some((f) => f.toLowerCase().includes(searchQuery.toLowerCase()));
+      query === '' ||
+      (p.name || '').toLowerCase().includes(query) ||
+      (p.subtitle || '').toLowerCase().includes(query) ||
+      (p.description || '').toLowerCase().includes(query) ||
+      (p.flavors || []).some((f) => f.toLowerCase().includes(query));
 
     return matchesCategory && matchesSearch;
   });
@@ -134,7 +137,21 @@ export default function MarketplacePage() {
         </div>
 
         {/* PRODUCTS GRID */}
-        {sortedProducts.length === 0 ? (
+        {isLoading && products.length === 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-[24px] border border-[#E8E8E4] overflow-hidden p-6 space-y-4 animate-pulse"
+              >
+                <div className="w-full aspect-square bg-[#F0F0EC] rounded-xl" />
+                <div className="h-4 bg-[#F0F0EC] rounded-md w-3/4" />
+                <div className="h-3 bg-[#F0F0EC] rounded-md w-1/2" />
+                <div className="h-8 bg-[#F0F0EC] rounded-full w-full mt-4" />
+              </div>
+            ))}
+          </div>
+        ) : sortedProducts.length === 0 ? (
           <div className="bg-white rounded-3xl border border-[#E8E8E4] p-16 text-center space-y-3">
             <p className="text-base font-semibold text-[#1A1A1A]">Nenhum produto encontrado</p>
             <p className="text-xs text-[#8E8E8A]">Tente buscar por outros termos ou limpe o filtro de busca.</p>

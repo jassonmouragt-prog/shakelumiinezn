@@ -49,6 +49,9 @@ interface AppContextType {
     password: string;
   }) => Promise<{ ok: boolean; error?: string; referralCode?: string }>;
   
+  // General loading state
+  isLoading: boolean;
+
   // Products
   products: Product[];
   addProduct: (product: Omit<Product, 'id' | 'slug'>) => void;
@@ -118,6 +121,7 @@ async function api<T = any>(url: string, options?: RequestInit): Promise<T> {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [isResellerAuthenticated, setIsResellerAuthenticated] = useState<boolean>(false);
@@ -174,7 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const [prods, ords, res, comms, exps, moves, loy] = await Promise.all([
-          api('/api/products').catch(() => null),
+          api<Product[]>('/api/products').catch(() => null),
           api('/api/orders').catch(() => null),
           api('/api/resellers').catch(() => null),
           api('/api/commissions').catch(() => null),
@@ -183,18 +187,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           api('/api/loyalty').catch(() => null)
         ]);
         if (cancelled) return;
-        if (prods) setProducts(prods);
-        if (ords) setOrders(ords);
-        if (res) setResellers(res);
-        if (comms) setCommissions(comms);
-        if (exps) setExpenses(exps);
-        if (moves) setStockMovements(moves);
+        if (prods && Array.isArray(prods) && prods.length > 0) {
+          const merged = prods.map((p) => {
+            const fallback = INITIAL_PRODUCTS.find((init) => init.id === p.id || init.slug === p.slug);
+            return {
+              ...p,
+              image: p.image || fallback?.image || '/images/shake-hero.jpg',
+              badge: p.badge || fallback?.badge || null,
+              gallery: p.gallery && p.gallery.length > 0 ? p.gallery : (fallback?.gallery || ['/images/shake-hero.jpg'])
+            };
+          });
+          setProducts(merged);
+        }
+        if (ords && Array.isArray(ords)) setOrders(ords);
+        if (res && Array.isArray(res)) setResellers(res);
+        if (comms && Array.isArray(comms)) setCommissions(comms);
+        if (exps && Array.isArray(exps)) setExpenses(exps);
+        if (moves && Array.isArray(moves)) setStockMovements(moves);
         if (loy?.account) {
           setLoyalty(loy.account);
           setLoyaltyRewards(loy.rewards || INITIAL_LOYALTY_REWARDS);
         }
       } catch (e) {
         console.warn('API hydrate error:', e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
       }
     })();
 
@@ -654,6 +671,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         loginReseller,
         logoutReseller,
         registerReseller,
+        isLoading,
         products,
         addProduct,
         updateProduct,

@@ -15,10 +15,9 @@ export default function FeaturedProducts() {
   const categories: { key: ProductCategory; label: string }[] = [
     { key: 'todos', label: 'Todos' },
     { key: 'shakes', label: 'Shakes' },
-    { key: 'combos', label: 'Combos' },
-    { key: 'kits', label: 'Kits' },
-    { key: 'novidades', label: 'Novidades' },
-    { key: 'mais-vendidos', label: 'Mais vendidos' }
+    { key: 'bebidas', label: 'Bebidas' },
+    { key: 'salgados', label: 'Salgados' },
+    { key: 'mais-vendidos', label: 'Mais Vendidos' }
   ];
 
   const filteredProducts = products.filter((prod) => {
@@ -26,8 +25,8 @@ export default function FeaturedProducts() {
     if (prod.showInShowcase === false) return false;
 
     if (activeCategory === 'todos') return true;
-    if (activeCategory === 'novidades') return prod.badge === 'NOVO';
-    if (activeCategory === 'mais-vendidos') return prod.badge === 'MAIS VENDIDO';
+    if (activeCategory === 'novidades') return prod.badge === 'NOVO' || prod.isFeatured;
+    if (activeCategory === 'mais-vendidos') return prod.badge === 'MAIS VENDIDO' || prod.rating >= 4.9;
     return prod.category === activeCategory;
   });
 

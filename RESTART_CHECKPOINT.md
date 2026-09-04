@@ -7,31 +7,37 @@ Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon
 - Deploy de produção ativo: https://shakelumiinezn.vercel.app
 - Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master)
 - Vercel conectado ao GitHub (deploy automático em push na master via `vercel git connect`).
-- **Persistência migrada para Neon (Postgres serverless)** — projeto Neon `sparkling-cherry-15094366`. Tudo é persistido no banco EXCETO o carrinho (fica em localStorage/sessão).
+- **Persistência no Neon (Postgres serverless)** — projeto Neon `sparkling-cherry-15094366`.
+- **Área do Revendedor exclusiva (`/revendedor`)**:
+  - Login individual para revendedores via `/api/resellers/login` e `/api/resellers/me`.
+  - Tabela `users` vinculada a `reseller_id` (`db/schema.sql`, `lib/resellers.ts`).
+  - Painel do revendedor com dashboard de comissões, link de indicação, extrato de pedidos indicados e status de repasse.
+  - Cadastro de acesso para revendedores direto pelo painel admin (gera usuário e senha).
+- **Redesenho Executivo do Painel Administrativo (`/admin`)**:
+  - Identidade visual Obsidian & Gold (`#09090B`, `#0E0E12`, `#18181C` com acentos `#D4AF37` / `#E8C868`).
+  - Navegação desktop fixa por categorias: Visão Geral (Dashboard), Operações (Pedidos, Catálogo, Estoque) e Finanças & Rede (Despesas & Margens, Revendedores & Comissões).
+  - Drawer mobile completo com backdrop blur.
+  - Topbar contextual com atalhos de ação rápida específicos por aba ativa.
+  - Dashboard Executivo com 4 KPI cards (Faturamento Bruto, Despesas Operacionais, Comissões a Repassar, Lucro Líquido Real com Margem Líquida %), feed de pedidos em tempo real e resumos operacionais.
+  - Gestão de Pedidos com filtros rápidos por status, busca em tempo real e atualização de status em 1 clique.
+  - Catálogo de Produtos com controle de visibilidade na vitrine, badges de categoria e modal de criação/edição com upload de foto.
+  - Controle de Estoque com indicadores visuais de estoque baixo, modal de movimentação rápida (entrada/saída) e histórico auditável.
+  - Painel Financeiro & DRE com gráficos de margem, listagem de despesas operacionais por categoria e lançamento rápido.
+  - Gestão de Revendedores com aprovação de cadastros, controle de comissões e criação de credenciais de acesso.
 - **Login real do admin**: tabela `users`, senha com hash (scrypt), sessão via cookie HttpOnly `lumiine_session` (HMAC-SHA256). Admin seed: `admin@lumiine.com` / `admin123`.
-- API routes em `app/api/`: auth (login/me), products, orders (+[id]), loyalty, resellers (+[id]), commissions, expenses (+[id]), stock. AppContext hidrata via `Promise.all` no mount.
-- Vars de ambiente configuradas na Vercel (Production): `DATABASE_URL` (pooled) e `SESSION_SECRET`.
-- `.env.local` local contém `DATABASE_URL` + `SESSION_SECRET` (ignorado pelo git). Seed: `npm run db:seed` (usa `sql.query` para o schema — o driver Neon v2 exige `sql.query(stmt)` e NÃO aceita `sql(stmt)`/`sql.unsafe` para execução de strings).
-- Testado em produção: `/`, `/admin`, `/api/products` (4), `/api/orders` (3), `/api/auth/login` (admin) — todos OK contra o Neon.
-- **Favicon e título da aba**: favicon substituído pelo emblema da logo (`app/icon.png` 512 + `app/apple-icon.png` 180; `app/favicon.ico` default removido). Título da aba: `SHAKELUMIINEZN | Shakes Naturais & Nutrição de Alta Performance` (em `app/layout.tsx`).
-- Hero usa vídeo com transparência:
-  - Chrome/Firefox/Edge: components/LazyHeroVideo.tsx -> <video> nativo com public/images/produto-3d.webm (VP9 + alpha nativo, loop via onEnded).
-  - Safari: components/CanvasVideoKey.tsx -> processa public/images/produto-3d-fallback.mp4 por frame (removendo fundo cinza por saturação) num canvas, dando transparência real.
-- Arq. gerados: produto-3d.webm (2160x3840, 3x, ~1.8MB) e produto-3d-fallback.mp4 (2160x3840, ~4.3MB).
-- Layout hero: box do produto desktop 520x560 / xl 600x640 (subido via translateY -3rem), mobile 320/384.
-- Correção hydration: RoleSwitcher.tsx usa usePathname (substituiu window.location que causava mismatch SSR/cliente).
-- Correção flash: removidos posters/fallback de imagem no hero (área fica transparente até vídeo carregar).
-- .vercelignore e .gitignore excluem fontes de mídia de origem (.mov, screen-capture.mp4, etc.) do deploy e do repo.
+- API routes em `app/api/`: auth (login/logout/me), resellers (login/me/crud), products (+[id]), orders (+[id]), loyalty, commissions, expenses (+[id]), stock.
+- Favicon e título da aba customizados com a identidade da marca.
+- Hero com animação 3D do produto (transparência nativa WebM VP9 no Chrome/Edge e fallback MP4 via Canvas nos demais).
+- Build validado com TypeScript (23 rotas estáticas e dinâmicas compilando 100% sem erros).
+- Último commit: `d09b753` em `origin/master`.
 
-## Fontes de trabalho (NÃO versionadas, apenas locais)
+## Fontes de trabalho locais (NÃO versionadas)
 - "hype drink - product animation 3d.mov" (sem alpha)
 - "hype drink - product animation 3d_1.mov" (COM alpha, argb 720x1280)
+- "CARDÁPIO SHAKE LUMIINE - ATUALIZADO.pdf"
+- "cardapio-pagina-4.png"
 - img01-06.jpg, sobre nós.jpg, logo.png, 3d product.png, screen-capture.mp4
-
-## Pendente (retomar aqui)
-- Nada bloqueante. Deploy automático na master já validado; banco Neon ativo; login real funcionando.
-- Opcional futuro: adicionar `DATABASE_URL`/`SESSION_SECRET` aos ambientes Preview/Development no Vercel (só Production configurado).
-- Opcional: se um dia rodar o seed de novo, ele recria as tabelas do zero (`DROP TABLE IF EXISTS`).
 
 ## Instrução permanente do usuário
 - Sempre que houver erros (operacional, segurança, visual), CORRIGIR automaticamente e avisar o que foi feito.
+- Manter o padrão visual executivo e alto nível de acabamento em todas as telas.

@@ -4,7 +4,7 @@ export interface ProductAddon {
   price: number;
 }
 
-export type ProductCategory = 'todos' | 'shakes' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
+export type ProductCategory = 'todos' | 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
 
 export interface Product {
   id: string;
@@ -15,7 +15,7 @@ export interface Product {
   price: number;
   promoPrice?: number;
   resellerPrice: number;
-  category: 'shakes' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
+  category: 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos' | string;
   badge?: 'MAIS VENDIDO' | 'NOVO' | 'OFERTA' | null;
   image: string;
   gallery: string[];
