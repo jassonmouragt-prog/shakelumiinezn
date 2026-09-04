@@ -20,11 +20,11 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: 'LUMIINE | Shakes Naturais & Nutrição de Alta Performance',
-  description: 'Descubra a linha premium de shakes naturais LUMIINE. Nutrição botânica pura, blend proteico isolado, fava de baunilha bourbon e cacau nobre para sua rotina de bem-estar.',
+  title: 'SHAKELUMIINEZN | Shakes Naturais & Nutrição de Alta Performance',
+  description: 'Descubra a linha premium de shakes naturais SHAKELUMIINEZN. Nutrição botânica pura, blend proteico isolado, fava de baunilha bourbon e cacau nobre para sua rotina de bem-estar.',
   keywords: 'shakes naturais, nutrição premium, wellness, proteína vegetal, sem glúten, saúde, rotina saudável, revenda de shakes',
   openGraph: {
-    title: 'LUMIINE | Natural Shakes • Gold Nutrition',
+    title: 'SHAKELUMIINEZN | Shakes Naturais de Alta Performance',
     description: 'Mais sabor, praticidade e equilíbrio para acompanhar sua rotina.',
     images: ['/images/shake-hero.jpg'],
   }
