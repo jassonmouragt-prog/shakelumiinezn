@@ -560,7 +560,7 @@ export const INITIAL_ORDERS: Order[] = [
     shippingMethod: 'entrega',
     shippingCost: 0,
     paymentMethod: 'pix',
-    status: 'preparando',
+    status: 'pendente',
     items: [
       {
         id: 'item-1',
@@ -598,7 +598,7 @@ export const INITIAL_ORDERS: Order[] = [
     shippingMethod: 'entrega',
     shippingCost: 0,
     paymentMethod: 'cartao',
-    status: 'enviado',
+    status: 'pendente',
     items: [
       {
         id: 'item-3',
@@ -631,7 +631,7 @@ export const INITIAL_ORDERS: Order[] = [
     shippingMethod: 'entrega',
     shippingCost: 0,
     paymentMethod: 'pix',
-    status: 'entregue',
+    status: 'pendente',
     items: [
       {
         id: 'item-4',

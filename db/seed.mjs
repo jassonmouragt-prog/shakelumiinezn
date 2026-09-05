@@ -206,7 +206,7 @@ async function main() {
       id: 'ord-1025', code: '#1025', customer_name: 'Mariana Duarte', customer_email: 'mariana.duarte@email.com',
       customer_phone: '(11) 97111-2233',
       address: { street: 'Alameda Gabriel Monteiro da Silva', number: '1420', neighborhood: 'Jardim Paulistano', city: 'São Paulo', state: 'SP', zipCode: '01442-001' },
-      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'preparando',
+      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'pendente',
       subtotal: 184.7, discount: 14.8, total: 169.9, points_earned: 170,
       created_at_str: '02/09/2026 14:32', created_at_ts: '2026-09-02T14:32:00Z',
       items: [
@@ -218,7 +218,7 @@ async function main() {
       id: 'ord-1024', code: '#1024', customer_name: 'Thiago Valença', customer_email: 'thiago.valenca@email.com',
       customer_phone: '(21) 98222-3344',
       address: { street: 'Avenida Vieira Souto', number: '480', neighborhood: 'Ipanema', city: 'Rio de Janeiro', state: 'RJ', zipCode: '22420-006' },
-      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'cartao', status: 'enviado',
+      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'cartao', status: 'pendente',
       subtotal: 169.9, discount: 0, total: 169.9, points_earned: 170,
       created_at_str: '01/09/2026 18:10', created_at_ts: '2026-09-01T18:10:00Z',
       items: [
@@ -229,7 +229,7 @@ async function main() {
       id: 'ord-1023', code: '#1023', customer_name: 'Camila Mendonça', customer_email: 'camila.mendonca@lumiine.com',
       customer_phone: '(11) 99888-7766',
       address: { street: 'Rua Oscar Freire', number: '920', complement: 'Apto 104', neighborhood: 'Cerqueira César', city: 'São Paulo', state: 'SP', zipCode: '01426-000' },
-      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'entregue',
+      shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'pendente',
       subtotal: 114.9, discount: 0, total: 114.9, points_earned: 115,
       created_at_str: '28/08/2026 10:15', created_at_ts: '2026-08-28T10:15:00Z',
       items: [

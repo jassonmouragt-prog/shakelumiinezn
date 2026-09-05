@@ -234,7 +234,8 @@ const [newProdStock, setNewProdStock] = useState('60');
   };
 
   // Financial calculations
-  const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
+  const confirmedOrders = orders.filter((o) => o.status !== 'pendente');
+  const totalRevenue = confirmedOrders.reduce((acc, o) => acc + o.total, 0);
   const totalExpenses = expenses.reduce((acc, exp) => acc + exp.amount, 0);
   const netProfit = totalRevenue - totalExpenses;
   const netMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
@@ -620,7 +621,7 @@ const [newProdStock, setNewProdStock] = useState('60');
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
                 {activeTab === 'dashboard' && 'Visão Geral & Métricas Executivas'}
-                {activeTab === 'pedidos' && 'Gestão & Rastreio de Pedidos'}
+                {activeTab === 'pedidos' && 'Gestão de Pedidos'}
                 {activeTab === 'produtos' && 'Catálogo & Amostras da Vitrine'}
                 {activeTab === 'estoque' && 'Movimentações & Auditoria de Estoque'}
                 {activeTab === 'financeiro' && 'Demonstrativo Financeiro & Margens'}
@@ -676,7 +677,7 @@ const [newProdStock, setNewProdStock] = useState('60');
                   </div>
                   <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
                     <ArrowUpRight className="w-3.5 h-3.5" />
-                    <span>{orders.length} pedidos registrados</span>
+                    <span>{confirmedOrders.length} pedidos faturados</span>
                   </div>
                 </div>
 
@@ -853,8 +854,8 @@ const [newProdStock, setNewProdStock] = useState('60');
             <div className="bg-[#121216] rounded-2xl border border-white/[0.08] p-6 sm:p-8 shadow-xs animate-fade-in space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
                 <div>
-                  <h3 className="text-base font-bold text-white">Central de Pedidos e Rastreio</h3>
-                  <p className="text-xs text-zinc-400">Acompanhe confirmação de pagamento e despacho em tempo real</p>
+                  <h3 className="text-base font-bold text-white">Central de Pedidos</h3>
+                  <p className="text-xs text-zinc-400">Acompanhe a confirmação de pagamento e o andamento de cada pedido</p>
                 </div>
 
                 <div className="flex items-center gap-3 flex-wrap">
@@ -878,7 +879,6 @@ const [newProdStock, setNewProdStock] = useState('60');
                   { id: 'pendente', label: 'Pendentes' },
                   { id: 'pago', label: 'Pagos' },
                   { id: 'preparando', label: 'Preparando' },
-                  { id: 'enviado', label: 'Enviados' },
                   { id: 'entregue', label: 'Entregues' },
                   { id: 'cancelado', label: 'Cancelados' }
                 ].map((s) => (
@@ -938,7 +938,6 @@ const [newProdStock, setNewProdStock] = useState('60');
                               <option value="pendente">Pendente</option>
                               <option value="pago">Pago</option>
                               <option value="preparando">Preparando</option>
-                              <option value="enviado">Enviado</option>
                               <option value="entregue">Entregue</option>
                               <option value="cancelado">Cancelado</option>
                             </select>
