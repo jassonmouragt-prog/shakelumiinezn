@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import { Star, Plus, Minus, Check, Sparkles, ShieldCheck, Heart, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import Footer from '@/components/Footer';
+import type { CustomizationStep } from '@/types';
 
 export default function SingleProductPage() {
   const params = useParams();
@@ -21,6 +22,16 @@ export default function SingleProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'descricao' | 'ingredientes' | 'nutricional' | 'beneficios' | 'avaliacoes'>('descricao');
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
+  const [selections, setSelections] = useState<Record<string, string[]>>({});
+  const [buildError, setBuildError] = useState<string | null>(null);
+  const [prevSlug, setPrevSlug] = useState(slug);
+
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
+    setSelections({});
+    setBuildError(null);
+    setSelectedAddons([]);
+  }
 
   if (!product) {
     return (
@@ -44,6 +55,22 @@ export default function SingleProductPage() {
   }
 
   const productAddons = product.addons ?? [];
+  const steps = product.customizationSteps ?? [];
+  const isBuilder = steps.length > 0;
+
+  const toggleStepOption = (step: CustomizationStep, optionId: string) => {
+    setBuildError(null);
+    setSelections((prev) => {
+      const current = prev[step.id] ?? [];
+      if (step.type === 'single') {
+        return { ...prev, [step.id]: current.includes(optionId) ? [] : [optionId] };
+      }
+      const isSelected = current.includes(optionId);
+      if (isSelected) return { ...prev, [step.id]: current.filter((id) => id !== optionId) };
+      if (step.max && current.length >= step.max) return prev;
+      return { ...prev, [step.id]: [...current, optionId] };
+    });
+  };
 
   const toggleAddon = (id: string) => {
     setSelectedAddons((prev) =>
@@ -56,8 +83,36 @@ export default function SingleProductPage() {
     return acc + (found ? found.price : 0);
   }, 0);
 
+  const stepsTotal = steps.reduce((acc, step) => {
+    const sel = selections[step.id] ?? [];
+    return acc + sel.reduce((sum, optId) => sum + (step.options.find((o) => o.id === optId)?.price ?? 0), 0);
+  }, 0);
+
   const basePrice = product.promoPrice || product.price;
-  const totalPrice = (basePrice + addonsTotal) * quantity;
+  const totalPrice = (basePrice + addonsTotal + stepsTotal) * quantity;
+
+  const handleAddToCart = () => {
+    if (isBuilder) {
+      const missing = steps.filter((s) => s.required && (selections[s.id] ?? []).length === 0);
+      if (missing.length > 0) {
+        setBuildError(`Complete os campos obrigatórios: ${missing.map((s) => s.title).join(', ')}.`);
+        return;
+      }
+      const summary = steps
+        .filter((s) => (selections[s.id] ?? []).length > 0)
+        .map((s) => {
+          const labels = (selections[s.id] ?? [])
+            .map((optId) => s.options.find((o) => o.id === optId)?.label)
+            .filter(Boolean)
+            .join(' + ');
+          return `${s.title}: ${labels}`;
+        })
+        .join(' • ');
+      addToCart(product, quantity, summary, selectedAddons, selections);
+    } else {
+      addToCart(product, quantity, selectedFlavor, selectedAddons);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] pt-28 flex flex-col justify-between">
@@ -136,7 +191,12 @@ export default function SingleProductPage() {
               </p>
 
               {/* Preços */}
-              <div className="flex items-baseline gap-3 pt-2">
+              <div className="flex items-baseline gap-2 pt-2">
+                {isBuilder && (
+                  <span className="text-[10px] text-[#B8943D] font-bold bg-[#FAFAF8] px-2.5 py-1 rounded-full border border-[#D4AF37]/35 uppercase tracking-wider">
+                    A partir de
+                  </span>
+                )}
                 <span className="text-2xl sm:text-3xl font-serif font-bold text-[#1A1A1A]">
                   R$ {basePrice.toFixed(2).replace('.', ',')}
                 </span>
@@ -147,27 +207,102 @@ export default function SingleProductPage() {
                 )}
               </div>
 
-              {/* Seleção de Sabor */}
-              <div className="space-y-2 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
-                  Selecione o Sabor:
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {product.flavors.map((flavor) => (
-                    <button
-                      key={flavor}
-                      onClick={() => setSelectedFlavor(flavor)}
-                      className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
-                        selectedFlavor === flavor
-                          ? 'bg-[#1A1A1A] text-white shadow-xs'
-                          : 'bg-[#FAFAF8] text-[#3A3A38] border border-[#E2E2DF] hover:border-[#D4AF37]'
-                      }`}
-                    >
-                      {flavor}
-                    </button>
-                  ))}
+              {/* Seleção de Sabor / Construtor de Montagem (iFood) */}
+              {isBuilder ? (
+                <div className="space-y-4 pt-2">
+                  {steps.map((step) => {
+                    const selected = selections[step.id] ?? [];
+                    const hasError = !!buildError && !!step.required && selected.length === 0;
+                    return (
+                      <div
+                        key={step.id}
+                        className={`rounded-2xl border p-4 transition-colors ${
+                          hasError
+                            ? 'border-red-300 bg-red-50/50'
+                            : 'border-[#E8E8E4] bg-[#FAFAF8]'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
+                              <h3 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
+                                {step.title}
+                              </h3>
+                              {step.required && (
+                                <span className="text-[9px] font-bold text-red-500">*</span>
+                              )}
+                            </div>
+                            {step.subtitle && (
+                              <p className="text-[11px] text-[#8E8E8A] mt-0.5">{step.subtitle}</p>
+                            )}
+                          </div>
+                          {step.type === 'multi' && step.max && (
+                            <span className="text-[10px] font-bold text-[#B8943D] bg-white border border-[#D4AF37]/30 rounded-full px-2.5 py-1 flex-shrink-0">
+                              {selected.length}/{step.max}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {step.options.map((option) => {
+                            const isActive = selected.includes(option.id);
+                            const isDisabled =
+                              step.type === 'multi' && !isActive && !!step.max && selected.length >= step.max;
+                            return (
+                              <button
+                                key={option.id}
+                                type="button"
+                                onClick={() => toggleStepOption(step, option.id)}
+                                disabled={isDisabled}
+                                className={`px-4 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-1.5 ${
+                                  isActive
+                                    ? 'bg-[#1A1A1A] text-white shadow-xs'
+                                    : 'bg-white text-[#3A3A38] border border-[#E2E2DF] hover:border-[#D4AF37]'
+                                } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              >
+                                {option.label}
+                                {!!option.price && (
+                                  <span className={isActive ? 'text-[#F5E7B2]' : 'text-[#B8943D] font-bold'}>
+                                    + R$ {option.price.toFixed(2).replace('.', ',')}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {buildError && (
+                    <p className="text-xs text-red-500 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                      {buildError}
+                    </p>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2 pt-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A]">
+                    Selecione o Sabor:
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {product.flavors.map((flavor) => (
+                      <button
+                        key={flavor}
+                        onClick={() => setSelectedFlavor(flavor)}
+                        className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${
+                          selectedFlavor === flavor
+                            ? 'bg-[#1A1A1A] text-white shadow-xs'
+                            : 'bg-[#FAFAF8] text-[#3A3A38] border border-[#E2E2DF] hover:border-[#D4AF37]'
+                        }`}
+                      >
+                        {flavor}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Adicionais Opcionais */}
               {productAddons.length > 0 && (
@@ -230,11 +365,11 @@ export default function SingleProductPage() {
 
                 {/* Botão Principal ADICIONAR AO PEDIDO */}
                 <button
-                  onClick={() => addToCart(product, quantity, selectedFlavor, selectedAddons)}
+                  onClick={handleAddToCart}
                   className="flex-1 py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_4px_20px_rgba(201,162,39,0.3)] flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-4 h-4" />
-                  <span>ADICIONAR AO PEDIDO • R$ {totalPrice.toFixed(2).replace('.', ',')}</span>
+                  <span>{isBuilder ? `MONTAR E ADICIONAR • R$ ${totalPrice.toFixed(2).replace('.', ',')}` : `ADICIONAR AO PEDIDO • R$ ${totalPrice.toFixed(2).replace('.', ',')}`}</span>
                 </button>
               </div>
 

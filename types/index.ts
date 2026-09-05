@@ -4,6 +4,22 @@ export interface ProductAddon {
   price: number;
 }
 
+export interface CustomizationOption {
+  id: string;
+  label: string;
+  price?: number;
+}
+
+export interface CustomizationStep {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: 'single' | 'multi';
+  max?: number;
+  required?: boolean;
+  options: CustomizationOption[];
+}
+
 export type ProductCategory = 'todos' | 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
 
 export interface Product {
@@ -35,6 +51,7 @@ export interface Product {
   };
   benefits: string[];
   addons?: ProductAddon[];
+  customizationSteps?: CustomizationStep[]; // Construtor tipo iFood (Bebida, Base, Textura, Cortesia, Sabores)
   stock: number;
   isFeatured?: boolean;
   showInShowcase?: boolean; // Controle se aparece na vitrine/amostra do site
@@ -46,6 +63,7 @@ export interface CartItem {
   quantity: number;
   selectedFlavor: string;
   selectedAddons?: string[];
+  customSelections?: Record<string, string[]>; // stepId -> opção ids (montagem do shake)
 }
 
 export type OrderStatus = 'pendente' | 'pago' | 'preparando' | 'enviado' | 'entregue' | 'cancelado';

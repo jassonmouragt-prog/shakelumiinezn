@@ -50,6 +50,107 @@ export const NEUTRAL_RESELLER: Reseller = {
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
+    id: 'menu-monte-seu-shake',
+    slug: 'monte-seu-shake',
+    name: 'Monte Seu Shake',
+    subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
+    description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
+    price: 28,
+    resellerPrice: 28,
+    category: 'shakes',
+    badge: 'MAIS VENDIDO',
+    image: '/images/3d-product.png',
+    gallery: ['/images/3d-product.png'],
+    rating: 5,
+    reviewsCount: 420,
+    weight: '500ml',
+    servings: 1,
+    flavors: [],
+    ingredients: ['Proteína Vegetal Premium', 'Base Leite ou Nutrev (Lac Free)', 'Sabores Naturais', 'Adicionais Funcionais'],
+    nutritionalInfo: { calories: '180 kcal', protein: '22g', carbs: '14g', fat: '3.5g', fiber: '5g', sodium: '60mg' },
+    benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Impossível enjoar: 3 sabores combinados'],
+    addons: [
+      { id: 'add-borda', label: 'Borda', price: 8 },
+      { id: 'add-calda-quente', label: 'Calda Quente', price: 8 },
+      { id: 'add-farofa', label: 'Farofa', price: 8 },
+      { id: 'add-crunch', label: 'Crunch', price: 8 },
+      { id: 'add-colageno', label: 'Colágeno', price: 8 },
+      { id: 'add-fibra', label: 'Fibra', price: 8 },
+      { id: 'add-casquinha', label: 'Casquinha', price: 8 }
+    ],
+    customizationSteps: [
+      {
+        id: 'bebida',
+        title: 'Bebidas Funcionais',
+        subtitle: 'Escolha a bebida do seu shake',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'copo-nrg', label: 'Copo de NRG' },
+          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate' }
+        ]
+      },
+      {
+        id: 'base',
+        title: 'Base do Seu Shake',
+        subtitle: 'Escolha a base',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'nutrev', label: 'Nutrev (Lac Free)' },
+          { id: 'leite', label: 'Leite' }
+        ]
+      },
+      {
+        id: 'textura',
+        title: 'Textura',
+        subtitle: 'Escolha a textura',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'cremoso', label: 'Cremoso' },
+          { id: 'sorvete', label: 'Sorvete' }
+        ]
+      },
+      {
+        id: 'cortesia',
+        title: 'Sua Cortesia',
+        subtitle: 'Cortesia da casa (opcional)',
+        type: 'single',
+        required: false,
+        options: [
+          { id: 'amendoim', label: 'Amendoim' },
+          { id: 'leite-em-po', label: 'Leite em Pó' },
+          { id: 'canela', label: 'Canela' },
+          { id: 'granola', label: 'Granola' }
+        ]
+      },
+      {
+        id: 'sabores',
+        title: 'Escolha o Sabor',
+        subtitle: 'Combine até 3 sabores',
+        type: 'multi',
+        max: 3,
+        required: true,
+        options: [
+          { id: 'baunilha', label: 'Baunilha' },
+          { id: 'morango', label: 'Morango' },
+          { id: 'chocolate', label: 'Chocolate' },
+          { id: 'doce-de-leite', label: 'Doce de Leite' },
+          { id: 'coco', label: 'Coco' },
+          { id: 'pistache', label: 'Pistache' },
+          { id: 'banana', label: 'Banana' },
+          { id: 'cookies-and-cream', label: 'Cookies and Cream' },
+          { id: 'torta-de-limao', label: 'Torta de Limão' },
+          { id: 'frape-de-abacaxi', label: 'Frapê de Abacaxi' }
+        ]
+      }
+    ],
+    stock: 100,
+    isFeatured: true,
+    showInShowcase: true
+  },
+  {
     id: 'menu-shake-pave-trufado',
     slug: 'shake-pave-trufado',
     name: 'Shake Pavê Trufado',

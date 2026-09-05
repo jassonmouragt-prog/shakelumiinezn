@@ -249,29 +249,52 @@ export default function MarketplacePage() {
 
                     <div className="pt-2 border-t border-[#F0F0EC] flex items-center justify-between">
                       <div>
-                        {hasPromo ? (
+                        {(product.customizationSteps?.length ?? 0) > 0 ? (
                           <div className="flex flex-col">
-                            <span className="text-[11px] text-[#8E8E8A] line-through">
-                              R$ {product.price.toFixed(2).replace('.', ',')}
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#B8943D]">
+                              A partir de
                             </span>
                             <span className="text-base font-bold text-[#1A1A1A]">
-                              R$ {product.promoPrice?.toFixed(2).replace('.', ',')}
+                              R$ {product.price.toFixed(2).replace('.', ',')}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-base font-bold text-[#1A1A1A]">
-                            R$ {product.price.toFixed(2).replace('.', ',')}
-                          </span>
+                          <>
+                            {hasPromo ? (
+                              <div className="flex flex-col">
+                                <span className="text-[11px] text-[#8E8E8A] line-through">
+                                  R$ {product.price.toFixed(2).replace('.', ',')}
+                                </span>
+                                <span className="text-base font-bold text-[#1A1A1A]">
+                                  R$ {product.promoPrice?.toFixed(2).replace('.', ',')}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-base font-bold text-[#1A1A1A]">
+                                R$ {product.price.toFixed(2).replace('.', ',')}
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
 
-                      <button
-                        onClick={() => addToCart(product, 1)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAFAF8] border border-[#D9D9D9] text-[#1A1A1A] group-hover:bg-[#1A1A1A] group-hover:text-white group-hover:border-[#1A1A1A] transition-all text-xs font-semibold"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>ADICIONAR</span>
-                      </button>
+                      {(product.customizationSteps?.length ?? 0) > 0 ? (
+                        <Link
+                          href={`/produto/${product.slug}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1A1A1A] text-white transition-all text-xs font-semibold hover:brightness-110"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>MONTAR</span>
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => addToCart(product, 1)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAFAF8] border border-[#D9D9D9] text-[#1A1A1A] group-hover:bg-[#1A1A1A] group-hover:text-white group-hover:border-[#1A1A1A] transition-all text-xs font-semibold"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>ADICIONAR</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

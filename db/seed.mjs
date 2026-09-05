@@ -60,6 +60,30 @@ async function main() {
   console.log('Populando produtos...');
   const products = [
     {
+      id: 'menu-monte-seu-shake', slug: 'monte-seu-shake',
+      name: 'Monte Seu Shake',
+      subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
+      description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
+      price: 28, promo_price: null, reseller_price: 28, category: 'shakes',
+      badge: 'MAIS VENDIDO', image: '/images/3d-product.png',
+      gallery: ['/images/3d-product.png'],
+      rating: 5, reviews_count: 420, weight: '500ml', servings: 1,
+      flavors: [],
+      ingredients: ['Proteína Vegetal Premium', 'Base Leite ou Nutrev (Lac Free)', 'Sabores Naturais', 'Adicionais Funcionais'],
+      nutritional_info: { calories: '180 kcal', protein: '22g', carbs: '14g', fat: '3.5g', fiber: '5g', sodium: '60mg' },
+      benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Impossível enjoar: 3 sabores combinados'],
+      addons: [
+        { id: 'add-borda', label: 'Borda', price: 8 },
+        { id: 'add-calda-quente', label: 'Calda Quente', price: 8 },
+        { id: 'add-farofa', label: 'Farofa', price: 8 },
+        { id: 'add-crunch', label: 'Crunch', price: 8 },
+        { id: 'add-colageno', label: 'Colágeno', price: 8 },
+        { id: 'add-fibra', label: 'Fibra', price: 8 },
+        { id: 'add-casquinha', label: 'Casquinha', price: 8 }
+      ],
+      stock: 100, is_featured: true, show_in_showcase: true
+    },
+    {
       id: 'prod-1', slug: 'shake-vanilla-bourbon-amendoas',
       name: 'Shake Vanilla Bourbon & Amêndoas Douradas',
       subtitle: 'Aveludado, aromático e nutritivo com notas de fava de baunilha pura.',
@@ -124,14 +148,16 @@ async function main() {
     await sql`
       INSERT INTO products (id, slug, name, subtitle, description, price, promo_price,
         reseller_price, category, badge, image, gallery, rating, reviews_count, weight,
-        servings, flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase)
+        servings, flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase,
+        addons)
       VALUES (${p.id}, ${p.slug}, ${p.name}, ${p.subtitle}, ${p.description}, ${p.price},
         ${p.promo_price}, ${p.reseller_price}, ${p.category}, ${p.badge}, ${p.image},
         ${JSON.stringify(p.gallery)}, ${p.rating}, ${p.reviews_count}, ${p.weight},
         ${p.servings}, ${JSON.stringify(p.flavors)}, ${JSON.stringify(p.ingredients)},
         ${JSON.stringify(p.nutritional_info)}, ${JSON.stringify(p.benefits)}, ${p.stock},
-        ${p.is_featured}, ${p.show_in_showcase})
-      ON CONFLICT (id) DO UPDATE SET stock = EXCLUDED.stock
+        ${p.is_featured}, ${p.show_in_showcase},
+        ${JSON.stringify(p.addons ?? [])})
+      ON CONFLICT (id) DO UPDATE SET stock = EXCLUDED.stock, addons = EXCLUDED.addons
     `;
   }
   console.log('✓ produtos ok');

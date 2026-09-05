@@ -63,7 +63,7 @@ interface AppContextType {
   cart: CartItem[];
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  addToCart: (product: Product, quantity?: number, selectedFlavor?: string, selectedAddons?: string[]) => void;
+  addToCart: (product: Product, quantity?: number, selectedFlavor?: string, selectedAddons?: string[], customSelections?: Record<string, string[]>) => void;
   updateCartQuantity: (itemId: string, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   clearCart: () => void;
@@ -194,10 +194,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               ...p,
               image: p.image || fallback?.image || '/images/shake-hero.jpg',
               badge: p.badge || fallback?.badge || null,
-              gallery: p.gallery && p.gallery.length > 0 ? p.gallery : (fallback?.gallery || ['/images/shake-hero.jpg'])
+              gallery: p.gallery && p.gallery.length > 0 ? p.gallery : (fallback?.gallery || ['/images/shake-hero.jpg']),
+              addons: p.addons && p.addons.length > 0 ? p.addons : (fallback?.addons ?? []),
+              customizationSteps: p.customizationSteps && p.customizationSteps.length > 0 ? p.customizationSteps : (fallback?.customizationSteps ?? [])
             };
           });
-          setProducts(merged);
+          // Garante que o produto principal "Monte Seu Shake" sempre exista
+          const builder = INITIAL_PRODUCTS.find((init) => init.slug === 'monte-seu-shake');
+          const final = builder && !merged.some((m) => m.slug === builder.slug) ? [builder, ...merged] : merged;
+          setProducts(final);
         }
         if (ords && Array.isArray(ords)) setOrders(ords);
         if (res && Array.isArray(res)) setResellers(res);
@@ -359,7 +364,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   // Cart actions
-  const addToCart = (product: Product, quantity = 1, selectedFlavor?: string, selectedAddons?: string[]) => {
+  const addToCart = (product: Product, quantity = 1, selectedFlavor?: string, selectedAddons?: string[], customSelections?: Record<string, string[]>) => {
     const flavor = selectedFlavor || product.flavors[0] || 'Original';
     const existingIndex = cart.findIndex(
       (item) => item.product.id === product.id && item.selectedFlavor === flavor
@@ -375,7 +380,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         product,
         quantity,
         selectedFlavor: flavor,
-        ...(selectedAddons?.length ? { selectedAddons } : {})
+        ...(selectedAddons?.length ? { selectedAddons } : {}),
+        ...(customSelections && Object.keys(customSelections).length > 0 ? { customSelections } : {})
       };
       setCart((prev) => [...prev, newItem]);
     }
@@ -409,7 +415,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const addon = item.product.addons?.find((a) => a.id === id);
       return sum + (addon ? addon.price : 0);
     }, 0);
-    return acc + (effectivePrice + addonsTotal) * item.quantity;
+    const customTotal = Object.entries(item.customSelections ?? {}).reduce((sum, [stepId, optionIds]) => {
+      const step = item.product.customizationSteps?.find((s) => s.id === stepId);
+      if (!step) return sum;
+      return sum + optionIds.reduce((s, optId) => {
+        const opt = step.options.find((o) => o.id === optId);
+        return s + (opt?.price ?? 0);
+      }, 0);
+    }, 0);
+    return acc + (effectivePrice + addonsTotal + customTotal) * item.quantity;
   }, 0);
 
   // Orders

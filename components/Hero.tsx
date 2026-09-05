@@ -7,7 +7,7 @@ import { ArrowRight, Sparkles, Users, Award, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export default function Hero() {
-  const { products, addToCart } = useApp();
+  const { products } = useApp();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   // Mouse move parallax for the central 3D product (within ±4deg)
@@ -20,6 +20,7 @@ export default function Hero() {
   };
 
   const heroProduct =
+    products.find((p) => p.slug === 'monte-seu-shake') ??
     products.find((p) => p.name === 'Hype Drink') ??
     products.find((p) => p.price > 0) ??
     products[0];
@@ -105,14 +106,14 @@ export default function Hero() {
             <div className="absolute w-96 h-96 xl:w-[440px] xl:h-[440px] rounded-full bg-radial from-[#F5E7B2]/40 via-white/30 to-transparent blur-xl pointer-events-none -z-0" />
 
             {/* Floating 3D Product Canister with Mouse Response */}
-            <div
+            <Link
+              href={`/produto/${heroProduct?.slug ?? 'produtos'}`}
               style={{
                 transform: `perspective(1000px) rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg) translateY(-3rem)`,
                 transition: 'transform 0.15s ease-out'
               }}
-              className="relative w-[520px] h-[560px] xl:w-[600px] xl:h-[640px] flex items-center justify-center group cursor-pointer"
-              onClick={() => addToCart(heroProduct, 1)}
-              title="Clique para adicionar à sacola"
+              className="block relative w-[520px] h-[560px] xl:w-[600px] xl:h-[640px] flex items-center justify-center group cursor-pointer"
+              title="Montar e personalizar"
             >
               {/* Product Image com efeito de flutuação */}
               <div className="relative w-full h-full drop-shadow-[0_25px_35px_rgba(0,0,0,0.08)] animate-float-slow">
@@ -131,10 +132,10 @@ export default function Hero() {
                 <Sparkles className="w-3 h-3 text-[#C9A227]" />
                 <span>{heroProduct?.name}</span>
                 <span className="text-[#B8943D] font-bold ml-1">
-                  {heroProduct ? `R$ ${heroProduct.price.toFixed(2).replace('.', ',')}` : ''}
+                  {heroProduct ? `A partir de R$ ${heroProduct.price.toFixed(2).replace('.', ',')}` : ''}
                 </span>
               </div>
-            </div>
+            </Link>
 
             {/* Sombra difusa realista no chão */}
             <div className="w-52 h-4 rounded-full bg-black/8 blur-md -mt-2 pointer-events-none" />
@@ -230,7 +231,11 @@ export default function Hero() {
             </div>
 
             {/* Lado direito: Produto Protagonista */}
-            <div className="relative w-36 sm:w-44 flex-shrink-0 aspect-[2/3] flex items-center justify-center">
+            <Link
+              href={`/produto/${heroProduct?.slug ?? 'produtos'}`}
+              className="relative w-36 sm:w-44 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
+              title="Montar e personalizar"
+            >
               <div className="absolute w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
               <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] animate-float-slow">
                 <Image
@@ -242,16 +247,16 @@ export default function Hero() {
                   className="object-contain"
                 />
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* 4. CTAs */}
           <div className="w-full max-w-xs flex flex-col gap-3">
             <Link
-              href="/produtos"
+              href={`/produto/${heroProduct?.slug ?? 'monte-seu-shake'}`}
               className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider shadow-[0_4px_20px_rgba(201,162,39,0.3)] flex items-center justify-center gap-2"
             >
-              <span>PEDIR AGORA</span>
+              <span>MONTAR MEU SHAKE</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link

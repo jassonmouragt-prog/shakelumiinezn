@@ -141,7 +141,26 @@ export default function CartDrawer() {
                   (sum, id) => sum + (item.product.addons?.find((a) => a.id === id)?.price ?? 0),
                   0
                 );
-                const itemPrice = itemBase + addonsTotal;
+                const customTotal = Object.entries(item.customSelections ?? {}).reduce((sum, [stepId, optionIds]) => {
+                  const step = item.product.customizationSteps?.find((s) => s.id === stepId);
+                  return sum + (step ? optionIds.reduce((s, optId) => s + (step.options.find((o) => o.id === optId)?.price ?? 0), 0) : 0);
+                }, 0);
+                const itemPrice = itemBase + addonsTotal + customTotal;
+                const isBuilder = (item.product.customizationSteps?.length ?? 0) > 0;
+                const customizationSummary = isBuilder
+                  ? Object.entries(item.customSelections ?? {})
+                      .map(([stepId, optionIds]) => {
+                        const step = item.product.customizationSteps?.find((s) => s.id === stepId);
+                        if (!step) return '';
+                        const labels = optionIds
+                          .map((optId) => step.options.find((o) => o.id === optId)?.label)
+                          .filter(Boolean)
+                          .join(' + ');
+                        return labels ? `${step.title}: ${labels}` : '';
+                      })
+                      .filter(Boolean)
+                      .join(' • ')
+                  : '';
                 return (
                   <div
                     key={item.id}
@@ -162,9 +181,17 @@ export default function CartDrawer() {
                         <h4 className="text-xs font-semibold text-[#1A1A1A] line-clamp-1">
                           {item.product.name}
                         </h4>
-                        <p className="text-[11px] text-[#8E8E8A] mt-0.5">
-                          Sabor: <span className="text-[#3A3A38]">{item.selectedFlavor}</span>
-                        </p>
+                        {isBuilder ? (
+                          customizationSummary ? (
+                            <p className="text-[11px] text-[#8E8E8A] mt-0.5 leading-snug line-clamp-3">
+                              {customizationSummary}
+                            </p>
+                          ) : null
+                        ) : (
+                          <p className="text-[11px] text-[#8E8E8A] mt-0.5">
+                            Sabor: <span className="text-[#3A3A38]">{item.selectedFlavor}</span>
+                          </p>
+                        )}
                         {item.selectedAddons && item.selectedAddons.length > 0 && (
                           <p className="text-[11px] text-[#8E8E8A] mt-0.5 line-clamp-1">
                             {item.selectedAddons
