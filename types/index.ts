@@ -65,7 +65,7 @@ export interface CartItem {
   customSelections?: Record<string, string[]>; // stepId -> opção ids (montagem do shake)
 }
 
-export type OrderStatus = 'pendente' | 'pago' | 'preparando' | 'entregue' | 'cancelado';
+export type OrderStatus = 'pendente' | 'confirmado' | 'cancelado';
 
 export interface Order {
   id: string;

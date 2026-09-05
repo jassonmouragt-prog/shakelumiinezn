@@ -373,7 +373,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       method: 'PATCH',
       body: JSON.stringify({ status: newStatus })
     }).catch(() => {});
-    if (newStatus === 'pago' && current && current.status !== 'pago') {
+    if (newStatus === 'confirmado' && current && current.status !== 'confirmado') {
       const points = current.pointsEarned || Math.floor(current.total);
       api<{ account: LoyaltyAccount }>('/api/loyalty', {
         method: 'POST',

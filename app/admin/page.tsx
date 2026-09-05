@@ -234,7 +234,7 @@ const [newProdStock, setNewProdStock] = useState('60');
   };
 
   // Financial calculations
-  const confirmedOrders = orders.filter((o) => o.status !== 'pendente');
+  const confirmedOrders = orders.filter((o) => o.status === 'confirmado');
   const totalRevenue = confirmedOrders.reduce((acc, o) => acc + o.total, 0);
   const totalExpenses = expenses.reduce((acc, exp) => acc + exp.amount, 0);
   const netProfit = totalRevenue - totalExpenses;
@@ -755,11 +755,11 @@ const [newProdStock, setNewProdStock] = useState('60');
                           <div className="flex items-center gap-3 flex-shrink-0">
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                o.status === 'pago'
+                                o.status === 'confirmado'
                                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                   : o.status === 'pendente'
                                   ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                  : 'bg-zinc-800 text-zinc-300 border border-zinc-700'
+                                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
                               }`}
                             >
                               {o.status}
@@ -877,9 +877,7 @@ const [newProdStock, setNewProdStock] = useState('60');
                 {[
                   { id: 'all', label: 'Todos' },
                   { id: 'pendente', label: 'Pendentes' },
-                  { id: 'pago', label: 'Pagos' },
-                  { id: 'preparando', label: 'Preparando' },
-                  { id: 'entregue', label: 'Entregues' },
+                  { id: 'confirmado', label: 'Confirmados' },
                   { id: 'cancelado', label: 'Cancelados' }
                 ].map((s) => (
                   <button
@@ -930,17 +928,25 @@ const [newProdStock, setNewProdStock] = useState('60');
                             R$ {order.total.toFixed(2).replace('.', ',')}
                           </td>
                           <td className="py-3.5 px-3">
-                            <select
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
-                              className="px-3 py-1.5 rounded-lg bg-[#18181C] border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#D4AF37] cursor-pointer"
-                            >
-                              <option value="pendente">Pendente</option>
-                              <option value="pago">Pago</option>
-                              <option value="preparando">Preparando</option>
-                              <option value="entregue">Entregue</option>
-                              <option value="cancelado">Cancelado</option>
-                            </select>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={order.status}
+                                onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
+                                className="px-3 py-1.5 rounded-lg bg-[#18181C] border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                              >
+                                <option value="pendente">Pendente</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="cancelado">Cancelado</option>
+                              </select>
+                              {order.status === 'pendente' && (
+                                <button
+                                  onClick={() => updateOrderStatus(order.id, 'confirmado')}
+                                  className="px-3 py-1.5 rounded-lg bg-[#D4AF37] text-black text-xs font-bold whitespace-nowrap hover:bg-[#E8C868] transition-colors"
+                                >
+                                  Confirmar
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
