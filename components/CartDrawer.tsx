@@ -9,7 +9,7 @@ import { Order } from '@/types';
 
 function buildWhatsAppMessage(order: Order): string {
   const lines: string[] = [];
-  lines.push('*NOVO PEDIDO — LUMIINE*');
+  lines.push('*NOVO PEDIDO — SHAKELUMIINE*');
   lines.push(`*Nome:* ${order.customerName}`);
   lines.push(`*Pedido:* ${order.code}`);
   lines.push('');

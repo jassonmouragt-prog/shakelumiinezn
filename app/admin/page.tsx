@@ -35,7 +35,16 @@ import {
   RefreshCw,
   Box,
   Wallet,
-  Check
+  Check,
+  FileText,
+  Calendar,
+  MapPin,
+  CreditCard,
+  Truck,
+  Phone,
+  Mail,
+  User,
+  ShoppingBag
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import {
@@ -44,7 +53,8 @@ import {
   StockMovementType,
   StockMovementReason,
   Product,
-  ProductAddon
+  ProductAddon,
+  Order
 } from '@/types';
 import ProductImageUpload from '@/components/ProductImageUpload';
 
@@ -84,6 +94,12 @@ export default function AdminPanelPage() {
   // Search & Filters in Orders
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState<string>('all');
+
+  // Modal: Detalhes do Pedido
+  const [selectedOrderForDetails, setSelectedOrderForDetails] = useState<Order | null>(null);
+  const currentDetailOrder = selectedOrderForDetails
+    ? orders.find((o) => o.id === selectedOrderForDetails.id) || selectedOrderForDetails
+    : null;
 
   // Products Category Filter
   const [productCategoryFilter, setProductCategoryFilter] = useState<string>('all');
@@ -785,12 +801,12 @@ const [newProdStock, setNewProdStock] = useState('60');
                         <div key={o.id} className="py-3.5 flex items-center justify-between text-xs gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-mono font-bold text-white">{o.code}</span>
-                              <span className="font-semibold text-zinc-300 truncate">{o.customerName}</span>
+                              <span className="font-mono font-bold text-[#E8C868]">{o.code}</span>
+                              <span className="font-semibold text-zinc-200 truncate">{o.customerName}</span>
                             </div>
-                            <span className="text-[11px] text-zinc-500">{o.createdAt}</span>
+                            <span className="text-[11px] text-zinc-500">{o.createdAt} • {o.items.length} {o.items.length === 1 ? 'item' : 'itens'}</span>
                           </div>
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-2.5 flex-shrink-0">
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                                 o.status === 'confirmado'
@@ -805,6 +821,13 @@ const [newProdStock, setNewProdStock] = useState('60');
                             <span className="font-bold text-white">
                               R$ {o.total.toFixed(2).replace('.', ',')}
                             </span>
+                            <button
+                              onClick={() => setSelectedOrderForDetails(o)}
+                              className="px-2.5 py-1 rounded-lg bg-white/[0.06] hover:bg-[#D4AF37]/20 border border-white/10 hover:border-[#D4AF37]/40 text-zinc-300 hover:text-[#E8C868] text-[11px] font-semibold flex items-center gap-1 transition-all"
+                            >
+                              <FileText className="w-3 h-3" />
+                              <span>Detalhe</span>
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -938,44 +961,66 @@ const [newProdStock, setNewProdStock] = useState('60');
                   <thead>
                     <tr className="border-b border-white/[0.08] text-zinc-500 uppercase tracking-wider text-[10px]">
                       <th className="py-3 px-3">Código</th>
-                      <th className="py-3 px-3">Cliente / Contato</th>
+                      <th className="py-3 px-3">Data / Hora</th>
+                      <th className="py-3 px-3">Cliente</th>
                       <th className="py-3 px-3">Itens</th>
                       <th className="py-3 px-3">Valor Total</th>
-                      <th className="py-3 px-3">Status do Pedido</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-3 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.04]">
                     {filteredOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-zinc-500">
+                        <td colSpan={7} className="py-8 text-center text-zinc-500">
                           Nenhum pedido localizado com os filtros atuais.
                         </td>
                       </tr>
                     ) : (
                       filteredOrders.map((order) => (
                         <tr key={order.id} className="hover:bg-white/[0.02] transition-colors">
-                          <td className="py-3.5 px-3 font-mono font-bold text-[#E8C868]">{order.code}</td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-[#E8C868] whitespace-nowrap">
+                            {order.code}
+                          </td>
+                          <td className="py-3.5 px-3 text-zinc-400 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-zinc-500" />
+                              <span>{order.createdAt}</span>
+                            </div>
+                          </td>
                           <td className="py-3.5 px-3">
                             <strong className="text-white block">{order.customerName}</strong>
-                            <span className="text-[11px] text-zinc-500">{order.customerEmail}</span>
+                            <span className="text-[11px] text-zinc-500">{order.customerPhone || order.customerEmail || 'Via WhatsApp'}</span>
                           </td>
                           <td className="py-3.5 px-3 text-zinc-300">
-                            {order.items.map((it) => `${it.quantity}x ${it.product.name.split(' ')[1] || 'Shake'}`).join(', ')}
+                            <div className="max-w-xs truncate" title={order.items.map((it) => `${it.quantity}x ${it.product.name}${it.selectedFlavor ? ` (${it.selectedFlavor})` : ''}`).join(' • ')}>
+                              {order.items.map((it) => `${it.quantity}x ${it.product.name}`).join(', ')}
+                            </div>
                           </td>
-                          <td className="py-3.5 px-3 font-bold text-white">
+                          <td className="py-3.5 px-3 font-bold text-white whitespace-nowrap">
                             R$ {order.total.toFixed(2).replace('.', ',')}
                           </td>
-                          <td className="py-3.5 px-3">
-                            <div className="flex items-center gap-2">
-                              <select
-                                value={order.status}
-                                onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
-                                className="px-3 py-1.5 rounded-lg bg-[#18181C] border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                          <td className="py-3.5 px-3 whitespace-nowrap">
+                            <select
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value as OrderStatus)}
+                              className="px-2.5 py-1.5 rounded-lg bg-[#18181C] border border-white/10 text-xs font-semibold text-white focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                            >
+                              <option value="pendente">Pendente</option>
+                              <option value="confirmado">Confirmado</option>
+                              <option value="cancelado">Cancelado</option>
+                            </select>
+                          </td>
+                          <td className="py-3.5 px-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => setSelectedOrderForDetails(order)}
+                                className="px-3 py-1.5 rounded-lg bg-white/[0.06] hover:bg-[#D4AF37]/20 border border-white/10 hover:border-[#D4AF37]/50 text-zinc-200 hover:text-[#E8C868] text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs"
+                                title="Ver todos os detalhes do pedido"
                               >
-                                <option value="pendente">Pendente</option>
-                                <option value="confirmado">Confirmado</option>
-                                <option value="cancelado">Cancelado</option>
-                              </select>
+                                <FileText className="w-3.5 h-3.5 text-[#D4AF37]" />
+                                <span>Detalhe</span>
+                              </button>
                               {order.status === 'pendente' && (
                                 <button
                                   onClick={() => updateOrderStatus(order.id, 'confirmado')}
@@ -1693,6 +1738,247 @@ const [newProdStock, setNewProdStock] = useState('60');
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: DETALHES DO PEDIDO */}
+      {currentDetailOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="bg-[#121216] w-full max-w-2xl rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-7 shadow-2xl space-y-6 my-8 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-4 gap-4">
+              <div>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span className="font-mono text-xl sm:text-2xl font-black text-[#E8C868]">
+                    {currentDetailOrder.code}
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                      currentDetailOrder.status === 'confirmado'
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                        : currentDetailOrder.status === 'pendente'
+                        ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                        : 'bg-red-500/15 text-red-400 border border-red-500/30'
+                    }`}
+                  >
+                    {currentDetailOrder.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-zinc-400 mt-1">
+                  <Clock className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>Realizado em: {currentDetailOrder.createdAt}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedOrderForDetails(null)}
+                className="p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/10 text-zinc-400 hover:text-white transition-colors"
+                title="Fechar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Informações do Cliente e Entrega */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Box 1: Cliente & Contato */}
+              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-2">
+                <div className="flex items-center gap-2 text-[#D4AF37] text-xs font-bold uppercase tracking-wider">
+                  <User className="w-3.5 h-3.5" />
+                  <span>Cliente</span>
+                </div>
+                <div className="text-xs space-y-1">
+                  <p className="font-bold text-white text-sm">{currentDetailOrder.customerName}</p>
+                  {currentDetailOrder.customerPhone && (
+                    <p className="flex items-center gap-1.5 text-zinc-300">
+                      <Phone className="w-3 h-3 text-zinc-500" />
+                      <span>{currentDetailOrder.customerPhone}</span>
+                    </p>
+                  )}
+                  {currentDetailOrder.customerEmail && (
+                    <p className="flex items-center gap-1.5 text-zinc-400">
+                      <Mail className="w-3 h-3 text-zinc-500" />
+                      <span>{currentDetailOrder.customerEmail}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Box 2: Entrega & Pagamento */}
+              <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-2">
+                <div className="flex items-center gap-2 text-[#D4AF37] text-xs font-bold uppercase tracking-wider">
+                  <Truck className="w-3.5 h-3.5" />
+                  <span>Entrega & Pagamento</span>
+                </div>
+                <div className="text-xs space-y-1 text-zinc-300">
+                  <p className="flex items-center justify-between">
+                    <span className="text-zinc-400">Tipo de Envio:</span>
+                    <strong className="text-white capitalize">
+                      {currentDetailOrder.shippingMethod === 'retirada' ? 'Retirada no Espaço' : 'Entrega no Endereço'}
+                    </strong>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span className="text-zinc-400">Pagamento:</span>
+                    <strong className="text-[#E8C868] uppercase">{currentDetailOrder.paymentMethod}</strong>
+                  </p>
+                  {currentDetailOrder.address && currentDetailOrder.address.street && (
+                    <p className="text-zinc-400 pt-1 text-[11px] border-t border-white/[0.06] mt-1">
+                      {currentDetailOrder.address.street}, {currentDetailOrder.address.number}
+                      {currentDetailOrder.address.complement ? ` - ${currentDetailOrder.address.complement}` : ''}
+                      {currentDetailOrder.address.neighborhood ? `, ${currentDetailOrder.address.neighborhood}` : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Itens do Pedido */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                  <ShoppingBag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Itens do Pedido ({currentDetailOrder.items.length})</span>
+                </h4>
+              </div>
+
+              <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+                {currentDetailOrder.items.map((item, idx) => {
+                  const unitPrice = item.product.promoPrice || item.product.price;
+                  const addons = (item.selectedAddons ?? [])
+                    .map((id) => item.product.addons?.find((a) => a.id === id))
+                    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+                  const addonsTotal = addons.reduce((sum, a) => sum + a.price, 0);
+                  const itemTotal = (unitPrice + addonsTotal) * item.quantity;
+
+                  return (
+                    <div
+                      key={item.id || idx}
+                      className="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] space-y-2"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-11 h-11 rounded-lg bg-black/40 border border-white/10 overflow-hidden flex-shrink-0 relative">
+                            <ProductImage
+                              src={item.product.image}
+                              alt={item.product.name}
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">{item.product.name}</p>
+                            <p className="text-[11px] text-zinc-400">
+                              {item.quantity}x de R$ {(unitPrice + addonsTotal).toFixed(2).replace('.', ',')}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="font-mono font-bold text-sm text-[#E8C868] whitespace-nowrap">
+                          R$ {itemTotal.toFixed(2).replace('.', ',')}
+                        </span>
+                      </div>
+
+                      {/* Personalizações / Sabores / Montagem */}
+                      {item.selectedFlavor && (
+                        <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04] text-[11px] text-zinc-300">
+                          <span className="text-[#D4AF37] font-semibold">Personalização: </span>
+                          <span>{item.selectedFlavor}</span>
+                        </div>
+                      )}
+
+                      {/* Adicionais */}
+                      {addons.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {addons.map((a) => (
+                            <span
+                              key={a.id}
+                              className="px-2 py-0.5 rounded-md bg-[#D4AF37]/10 border border-[#D4AF37]/25 text-[10px] font-semibold text-[#E8C868]"
+                            >
+                              + {a.label} (R$ {a.price.toFixed(2).replace('.', ',')})
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Resumo Financeiro */}
+            <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-zinc-400">
+                <span>Subtotal dos Itens:</span>
+                <span className="font-mono text-zinc-200">
+                  R$ {currentDetailOrder.subtotal.toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+              {currentDetailOrder.shippingCost > 0 && (
+                <div className="flex items-center justify-between text-zinc-400">
+                  <span>Taxa de Entrega:</span>
+                  <span className="font-mono text-zinc-200">
+                    R$ {currentDetailOrder.shippingCost.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              )}
+              {currentDetailOrder.discount > 0 && (
+                <div className="flex items-center justify-between text-emerald-400">
+                  <span>Desconto:</span>
+                  <span className="font-mono">
+                    - R$ {currentDetailOrder.discount.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between pt-2 border-t border-white/[0.08] text-sm">
+                <span className="font-bold text-white">Valor Total:</span>
+                <span className="font-mono font-black text-lg text-[#E8C868]">
+                  R$ {currentDetailOrder.total.toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+            </div>
+
+            {/* Ações Rápidas de Status */}
+            <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {currentDetailOrder.status !== 'confirmado' && (
+                  <button
+                    onClick={() => {
+                      updateOrderStatus(currentDetailOrder.id, 'confirmado');
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-black text-xs font-bold hover:brightness-110 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Confirmar Pagamento</span>
+                  </button>
+                )}
+                {currentDetailOrder.status === 'confirmado' && (
+                  <button
+                    onClick={() => {
+                      updateOrderStatus(currentDetailOrder.id, 'pendente');
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Marcar como Pendente</span>
+                  </button>
+                )}
+                {currentDetailOrder.status !== 'cancelado' && (
+                  <button
+                    onClick={() => {
+                      updateOrderStatus(currentDetailOrder.id, 'cancelado');
+                    }}
+                    className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-semibold transition-all"
+                  >
+                    Cancelar Pedido
+                  </button>
+                )}
+              </div>
+
+              <button
+                onClick={() => setSelectedOrderForDetails(null)}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/10 border border-white/10 text-zinc-300 text-xs font-semibold transition-all"
+              >
+                Fechar
+              </button>
+            </div>
           </div>
         </div>
       )}
