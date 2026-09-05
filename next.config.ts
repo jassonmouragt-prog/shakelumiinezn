@@ -31,20 +31,6 @@ const securityHeaders = [
   },
 ];
 
-const cspHeader = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self' data:",
-  "media-src 'self' blob: data:",
-  "connect-src 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-].join("; ");
-
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -62,10 +48,6 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: [
           ...securityHeaders,
-          {
-            key: "Content-Security-Policy",
-            value: cspHeader,
-          },
         ],
       },
     ];
