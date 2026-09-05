@@ -31,7 +31,7 @@ interface AppContextType {
   setCurrentRole: (role: UserRole) => void;
   currentUser: { id: string; name: string; email: string; role: string } | null;
   isAdminAuthenticated: boolean;
-  loginAdmin: (email: string, pass: string) => boolean;
+  loginAdmin: (email: string, pass: string) => Promise<string | null>;
   logoutAdmin: () => void;
 
   // General loading state
@@ -232,27 +232,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Admin Auth (real, via API)
-  const loginAdmin = useCallback((email: string, pass: string): boolean => {
-    (async () => {
-      try {
-        const res = await api<{ user: { id: string; name: string; email: string; role: string } }>('/api/auth/login', {
-          method: 'POST',
-          body: JSON.stringify({ email, password: pass })
-        });
-        if (res?.user?.role === 'admin') {
-          setIsAdminAuthenticated(true);
-          setCurrentRole('admin');
-          setCurrentUser(res.user);
-          void loadAdminData();
-          showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
+  const loginAdmin = useCallback(
+    (email: string, pass: string): Promise<string | null> => {
+      return (async () => {
+        try {
+          const res = await api<{ user: { id: string; name: string; email: string; role: string } }>('/api/auth/login', {
+            method: 'POST',
+            body: JSON.stringify({ email, password: pass })
+          });
+          if (res?.user?.role === 'admin') {
+            setIsAdminAuthenticated(true);
+            setCurrentRole('admin');
+            setCurrentUser(res.user);
+            void loadAdminData();
+            showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
+            return null;
+          }
+          throw new Error('Credenciais inválidas');
+        } catch (e: any) {
+          setIsAdminAuthenticated(false);
+          const message =
+            typeof e?.message === 'string' && e.message.includes('Muitas requisições')
+              ? 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.'
+              : e?.message || 'Não foi possível acessar o painel. Verifique a conexão e tente novamente.';
+          showToast('Falha no Login', message, 'info');
+          return message;
         }
-      } catch (e: any) {
-        setIsAdminAuthenticated(false);
-        showToast('Falha no Login', e?.message || 'Credenciais inválidas.', 'info');
-      }
-    })();
-    return true;
-  }, [loadAdminData]);
+      })();
+    },
+    [loadAdminData]
+  );
 
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
