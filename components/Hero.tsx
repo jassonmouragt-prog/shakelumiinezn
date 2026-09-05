@@ -185,7 +185,7 @@ export default function Hero() {
         <div className="lg:hidden flex flex-col space-y-6 pt-2 pb-6">
 
           {/* ROW: TEXTO (esquerda) + PRODUTO (direita) */}
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row items-center gap-2 sm:gap-3">
             {/* Lado esquerdo: Label, Headline, Texto */}
             <div className="flex-1 min-w-0 text-left space-y-3">
               {/* 1. Label */}
@@ -212,17 +212,17 @@ export default function Hero() {
             {/* Lado direito: Produto Protagonista */}
             <Link
               href={`/produto/${heroProduct?.slug ?? 'produtos'}`}
-              className="relative w-44 sm:w-52 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
+              className="relative w-52 sm:w-64 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
               title="Montar e personalizar"
             >
-              <div className="absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
+              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
               <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] animate-float-slow">
                 <Image
                   src="/images/3d-product.png"
                   alt="Shake Lumiine ZN - Produto 3D"
                   fill
                   priority
-                  sizes="(min-width: 640px) 208px, 176px"
+                  sizes="(min-width: 640px) 256px, 208px"
                   className="object-contain"
                 />
               </div>
