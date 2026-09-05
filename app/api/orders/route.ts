@@ -172,7 +172,8 @@ export async function POST(req: NextRequest) {
   for (const item of body.items) {
     const qty = integer(item.quantity, 1, 999);
     const itemId = str(item.id, 100, { min: 1 });
-    const flavor = str(item.selectedFlavor, 100);
+    // Sabores/personalizações personalizadas do "Monte Seu Shake" concatenam todos os passos escolhidos
+    const flavor = item.selectedFlavor != null ? str(item.selectedFlavor, 4000) : '';
     const product = isRecord(item.product) ? item.product : null;
     if (!product) {
       return Response.json({ error: 'Item com produto inválido' }, { status: 400 });
