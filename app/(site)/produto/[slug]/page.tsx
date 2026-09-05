@@ -145,9 +145,6 @@ export default function SingleProductPage() {
                     R$ {product.price.toFixed(2).replace('.', ',')}
                   </span>
                 )}
-                <span className="text-xs text-[#B8943D] font-semibold bg-[#FAFAF8] px-2.5 py-1 rounded-full border border-[#D4AF37]/35">
-                  Rende {product.servings} doses ({product.weight})
-                </span>
               </div>
 
               {/* Seleção de Sabor */}

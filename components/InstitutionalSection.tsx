@@ -2,17 +2,8 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { CheckCircle2 } from 'lucide-react';
 
 export default function InstitutionalSection() {
-  const pillars = [
-    'Origem Botânica Rastreada de Alta Pureza',
-    'Biodisponibilidade com Absorção Otimizada',
-    'Sem Espessantes Artificiais ou Conservantes',
-    'Embalagem Sustentável com Fechamento Hermético'
-  ];
-
   return (
     <section id="sobre-nos" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
       <div className="bg-gradient-to-br from-[#FFFFFF] via-[#FAFAF8] to-[#F5F5F3] rounded-[36px] border border-[#E8E8E4] p-8 sm:p-12 lg:p-16 shadow-[0_20px_40px_rgba(0,0,0,0.03)] overflow-hidden">
@@ -40,39 +31,38 @@ export default function InstitutionalSection() {
               SOBRE NÓS
             </div>
 
-            <h2 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-[#1A1A1A] leading-tight">
-              FEITO PARA FAZER PARTE DA SUA{' '}
-              <span className="font-serif italic font-normal text-[#C9A227]">
-                rotina.
-              </span>
+            <h2 className="font-serif italic font-normal text-2xl sm:text-3xl lg:text-4xl text-[#C9A227] leading-snug">
+              Um sonho que começou aos 18 anos
             </h2>
 
             <div className="space-y-4 text-sm text-[#5A5A58] leading-relaxed">
               <p>
-                A LUMIINE nasceu da convicção de que nutrir o corpo não deve ser uma obrigação amarga ou um suplemento impessoal. Deve ser um momento de pausa, sofisticação e profundo respeito pelo seu bem-estar diário.
+                O <strong className="text-[#1A1A1A] font-semibold">Shake Lumiine ZN</strong> nasceu de um sonho. Aos 18 anos, eu decidi acreditar que era possível ter o meu próprio negócio. Com a ajuda do Weverton, transformamos esse sonho em realidade. Mesmo começando com poucos recursos, colocamos muito amor, dedicação e fé em cada detalhe.
               </p>
               <p>
-                Com sede de inovação limpa, combinamos ciência nutricional de ponta com matérias-primas nobres colhidas no ápice de sua potência — fava de baunilha pura de Madagascar, cacau selvagem 100% brasileiro e blends proteicos hipoalergênicos de absorção suave.
+                No dia <strong className="text-[#1A1A1A] font-semibold">6 de dezembro de 2025</strong>, abrimos as portas do nosso espaço e começamos a construir uma história que, graças a Deus, vem dando certo.
+              </p>
+              <p>
+                Mas o que mais me faz feliz não é apenas ver o nosso negócio crescendo. É ver as pessoas melhorando junto com a gente. É poder acompanhar pessoas que começam a fazer escolhas mais saudáveis no dia a dia, que passam a cuidar mais de si mesmas e que, com isso, recuperam sua autoestima e se sentem melhor.
+              </p>
+              <p>
+                E foi assim que percebi que o <strong className="text-[#1A1A1A] font-semibold">Shake Lumiine ZN</strong> se tornou muito mais do que um negócio. Aqui, somos uma família. Tenho clientes que chegaram apenas como clientes e, com o tempo, se tornaram pessoas muito especiais para mim. São pessoas incríveis que entram pela porta do nosso espaço e acabam ficando para sempre nos nossos corações.
+              </p>
+              <p>
+                Cada conversa, cada sorriso, cada conquista e cada pessoa que passa por aqui faz parte da nossa história.
+              </p>
+              <p>
+                Tenho muito orgulho de tudo que construímos até aqui e sou muito grata a Deus por cada pessoa que Ele colocou no nosso caminho. O <strong className="text-[#1A1A1A] font-semibold">Shake Lumiine ZN</strong> é nosso sonho, nosso trabalho e nossa família.
+              </p>
+              <p>
+                E agora queremos que você também faça parte dessa história.
               </p>
             </div>
 
-            {/* Pillars check list */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {pillars.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-2.5 text-xs text-[#1A1A1A] font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-[#C9A227] flex-shrink-0" />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-4">
-              <Link
-                href="/produtos"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold tracking-wider hover:bg-[#2A2A2A] transition-all shadow-md"
-              >
-                EXPERIMENTAR A DIFERENÇA
-              </Link>
+            <div className="pt-2 border-t border-[#E8E8E4]">
+              <p className="font-serif italic text-base sm:text-lg text-[#C9A227] leading-snug">
+                Venha nos conhecer. Venha conhecer nosso espaço. Venha se deliciar com nossos shakes. Venha fazer parte da nossa família. 🤍
+              </p>
             </div>
           </div>
 

@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Sparkles, Users, Award, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import LazyHeroVideo from '@/components/LazyHeroVideo';
 
 export default function Hero() {
   const { products, addToCart } = useApp();
@@ -111,16 +110,19 @@ export default function Hero() {
                 transform: `perspective(1000px) rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg) translateY(-3rem)`,
                 transition: 'transform 0.15s ease-out'
               }}
-              className="relative w-[520px] h-[560px] xl:w-[600px] xl:h-[640px] animate-float-slow flex items-center justify-center group cursor-pointer"
+              className="relative w-[520px] h-[560px] xl:w-[600px] xl:h-[640px] flex items-center justify-center group cursor-pointer"
               onClick={() => addToCart(heroProduct, 1)}
               title="Clique para adicionar à sacola"
             >
-              {/* Product Image / Video */}
-              <div className="relative w-full h-full drop-shadow-[0_25px_35px_rgba(0,0,0,0.08)]">
-                <LazyHeroVideo
-                  webmSrc="/images/produto-3d.webm"
-                  fallbackMp4="/images/produto-3d-fallback.mp4"
-                  className="w-full h-full"
+              {/* Product Image com efeito de flutuação */}
+              <div className="relative w-full h-full drop-shadow-[0_25px_35px_rgba(0,0,0,0.08)] animate-float-slow">
+                <Image
+                  src="/images/3d-product.png"
+                  alt="Shake Lumiine ZN - Produto 3D"
+                  fill
+                  priority
+                  sizes="(min-width: 1280px) 600px, 520px"
+                  className="object-contain"
                 />
               </div>
 
@@ -199,38 +201,47 @@ export default function Hero() {
         </div>
 
         {/* MOBILE COMPOSITION: SECTION 14 (Dedicated ergonomics) */}
-        {/* Ordem: 1. label, 2. headline, 3. produto, 4. CTA, 5. Clube, 6. Revenda */}
-        <div className="lg:hidden flex flex-col items-center text-center space-y-6 pt-2 pb-6">
-          
-          {/* 1. Label */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D4AF37]/35 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-            <span className="text-[9.5px] tracking-[0.2em] font-semibold text-[#B8943D] uppercase">
-              NATURAL • PREMIUM • SEU MOMENTO
-            </span>
-          </div>
+        {/* Texto à esquerda, produto à direita */}
+        <div className="lg:hidden flex flex-col space-y-6 pt-2 pb-6">
 
-          {/* 2. Headline */}
-          <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-[#1A1A1A] leading-tight px-2">
-            NATURAL PARA{' '}
-            <span className="font-serif italic font-normal text-[#C9A227]">
-              você.
-            </span>
-          </h1>
+          {/* ROW: TEXTO (esquerda) + PRODUTO (direita) */}
+          <div className="flex flex-row items-center gap-4">
+            {/* Lado esquerdo: Label, Headline, Texto */}
+            <div className="flex-1 min-w-0 text-left space-y-3">
+              {/* 1. Label */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D4AF37]/35 shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
+                <span className="text-[9.5px] tracking-[0.2em] font-semibold text-[#B8943D] uppercase">
+                  NATURAL • PREMIUM • SEU MOMENTO
+                </span>
+              </div>
 
-          <p className="text-xs sm:text-sm text-[#5A5A58] max-w-xs font-normal">
-            Mais sabor, praticidade e equilíbrio para acompanhar sua rotina diária.
-          </p>
+              {/* 2. Headline */}
+              <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-[#1A1A1A] leading-tight">
+                NATURAL PARA{' '}
+                <span className="font-serif italic font-normal text-[#C9A227]">
+                  você.
+                </span>
+              </h1>
 
-          {/* 3. Produto Protagonista Central */}
-          <div className="relative w-80 h-80 sm:w-96 sm:h-96 my-1 flex items-center justify-center">
-            <div className="absolute w-52 h-52 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
-            <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)]">
-              <LazyHeroVideo
-                webmSrc="/images/produto-3d.webm"
-                fallbackMp4="/images/produto-3d-fallback.mp4"
-                className="w-full h-full"
-              />
+              <p className="text-xs sm:text-sm text-[#5A5A58] max-w-xs font-normal">
+                Mais sabor, praticidade e equilíbrio para acompanhar sua rotina diária.
+              </p>
+            </div>
+
+            {/* Lado direito: Produto Protagonista */}
+            <div className="relative w-36 sm:w-44 flex-shrink-0 aspect-[2/3] flex items-center justify-center">
+              <div className="absolute w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
+              <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] animate-float-slow">
+                <Image
+                  src="/images/3d-product.png"
+                  alt="Shake Lumiine ZN - Produto 3D"
+                  fill
+                  priority
+                  sizes="(min-width: 640px) 176px, 144px"
+                  className="object-contain"
+                />
+              </div>
             </div>
           </div>
 
