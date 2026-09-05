@@ -407,7 +407,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (res?.account) setLoyalty(res.account);
           showToast('Pontos Creditados', `${points} pontos adicionados na conta de fidelidade.`, 'gold');
         })
-        .catch(() => {});
+.catch((e: any) => {
+        showToast(
+          'Não foi possível registrar o pedido no sistema',
+          e?.message || 'Ocorreu um erro ao enviar. Revise os dados e tente novamente.',
+          'info'
+        );
+      });
     }
     showToast('Status Atualizado', `Pedido atualizado para: ${newStatus.toUpperCase()}`, 'info');
   };

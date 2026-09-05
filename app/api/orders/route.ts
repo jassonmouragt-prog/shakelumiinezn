@@ -138,8 +138,15 @@ export async function POST(req: NextRequest) {
   }
 
   const customerName = str(body.customerName, 120, { min: 2 });
-  const customerEmail = email(body.customerEmail);
-  const customerPhone = phone(body.customerPhone);
+  // E-mail e telefone são opcionais no checkout (confirmação via WhatsApp)
+  const customerEmail =
+    body.customerEmail && String(body.customerEmail).trim()
+      ? email(body.customerEmail)
+      : '';
+  const customerPhone =
+    body.customerPhone && String(body.customerPhone).trim()
+      ? phone(body.customerPhone)
+      : '';
   const shippingMethod = oneOf(body.shippingMethod, ['entrega', 'retirada']);
   const paymentMethod = oneOf(body.paymentMethod, ['pix', 'cartao']);
   const shippingCost = num(body.shippingCost, 0, 1000);
@@ -151,7 +158,7 @@ export async function POST(req: NextRequest) {
     : null;
 
   if (
-    !customerName || !customerEmail || !customerPhone ||
+    !customerName || customerEmail === null || customerPhone === null ||
     !shippingMethod || !paymentMethod ||
     shippingCost === null || subtotal === null || discount === null ||
     total === null || !address
