@@ -218,6 +218,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, [loadAdminData]);
 
+  // Real-time: painel admin atualiza os pedidos automaticamente (polling leve)
+  useEffect(() => {
+    if (!isAdminAuthenticated) return;
+    let active = true;
+    const tick = async () => {
+      try {
+        const ords = await api('/api/orders').catch(() => null);
+        if (active && ords && Array.isArray(ords)) setOrders(ords);
+      } catch {}
+    };
+    const id = setInterval(tick, 5000);
+    return () => {
+      active = false;
+      clearInterval(id);
+    };
+  }, [isAdminAuthenticated]);
+
   // Toast handler
   const showToast = (title: string, message: string, type: Toast['type'] = 'gold') => {
     const id = Math.random().toString(36).substring(2, 9);
@@ -343,40 +360,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, 0);
 
   // Orders
-  const createOrder = async (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>): Promise<Order | null> => {
-    try {
-      const saved = await api<{
-        id: string;
-        code: string;
-        createdAt: string;
-        pointsEarned: number;
-      }>('/api/orders', { method: 'POST', body: JSON.stringify(orderData) });
+  const postOrder = useCallback(
+    (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>) =>
+      api<{ id: string; code: string; createdAt: string; pointsEarned: number }>('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify(orderData)
+      }),
+    []
+  );
 
-      const newOrder: Order = {
-        ...orderData,
-        id: saved.id,
-        code: saved.code,
-        createdAt: saved.createdAt,
-        status: 'pendente',
-        pointsEarned: saved.pointsEarned ?? Math.floor(orderData.total)
-      };
+  const createOrder = useCallback(
+    async (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>): Promise<Order | null> => {
+      let lastError: any = null;
+      // Tenta de novo em falhas transitórias (rede / instância fria / Neon)
+      for (let attempt = 0; attempt <= 1; attempt++) {
+        try {
+          const saved = await postOrder(orderData);
+          const newOrder: Order = {
+            ...orderData,
+            id: saved.id,
+            code: saved.code,
+            createdAt: saved.createdAt,
+            status: 'pendente',
+            pointsEarned: saved.pointsEarned ?? Math.floor(orderData.total)
+          };
 
-      setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== saved.id)]);
+          setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== saved.id)]);
 
-      clearCart();
-      setIsCartOpen(false);
+          clearCart();
+          setIsCartOpen(false);
 
-      showToast('Pedido Confirmado!', `Seu pedido ${saved.code} foi registrado com sucesso.`, 'gold');
-      return newOrder;
-    } catch (e: any) {
-      showToast(
-        'Não foi possível registrar o pedido no sistema',
-        e?.message || 'Ocorreu um erro ao enviar. Revise os dados e tente novamente.',
-        'info'
-      );
+          showToast('Pedido Confirmado!', `Seu pedido ${saved.code} foi registrado com sucesso.`, 'gold');
+          return newOrder;
+        } catch (e: any) {
+          lastError = e;
+          if (attempt === 0) await new Promise((r) => setTimeout(r, 1500));
+        }
+      }
+
+      const hint =
+        lastError?.message?.includes('Muitas requisições')
+          ? 'Muitos pedidos em pouco tempo. Aguarde alguns minutos e tente novamente.'
+          : lastError?.message && lastError.message !== 'Erro na requisição'
+            ? lastError.message
+            : 'Ocorreu um erro ao enviar. Revise os dados e tente novamente.';
+      showToast('Não foi possível registrar o pedido no sistema', hint, 'info');
       return null;
-    }
-  };
+    },
+    [postOrder]
+  );
 
   const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
     const current = orders.find((o) => o.id === orderId);
