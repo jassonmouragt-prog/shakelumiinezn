@@ -20,7 +20,7 @@ export interface CustomizationStep {
   options: CustomizationOption[];
 }
 
-export type ProductCategory = 'todos' | 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos';
+export type ProductCategory = 'todos' | 'shakes' | 'bebidas' | 'salgados' | 'novidades' | 'mais-vendidos';
 
 export interface Product {
   id: string;
@@ -30,7 +30,7 @@ export interface Product {
   description: string;
   price: number;
   promoPrice?: number;
-  category: 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos' | string;
+  category: 'shakes' | 'bebidas' | 'salgados' | 'novidades' | 'mais-vendidos' | string;
   badge?: 'MAIS VENDIDO' | 'NOVO' | 'OFERTA' | null;
   image: string;
   gallery: string[];

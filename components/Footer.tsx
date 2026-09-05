@@ -102,13 +102,13 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/produtos?cat=combos" className="hover:text-[#C9A227] transition-colors">
-                  Combos
+                <Link href="/produtos?cat=bebidas" className="hover:text-[#C9A227] transition-colors">
+                  Bebidas
                 </Link>
               </li>
               <li>
-                <Link href="/produtos?cat=kits" className="hover:text-[#C9A227] transition-colors">
-                  Kits
+                <Link href="/produtos?cat=salgados" className="hover:text-[#C9A227] transition-colors">
+                  Salgados
                 </Link>
               </li>
               <li>

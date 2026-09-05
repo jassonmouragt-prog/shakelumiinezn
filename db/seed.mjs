@@ -112,36 +112,6 @@ async function main() {
       nutritional_info: { calories: '146 kcal', protein: '21g', carbs: '3.9g', fat: '4.1g', fiber: '6.0g', sodium: '65mg' },
       benefits: ['Rico em polifenóis antioxidantes e flavonoides', 'Sensação de bem-estar e suporte ao humor', 'Textura densa e saciante sem laticínios', 'Sem sabor residual de adoçante'],
       stock: 52, is_featured: true, show_in_showcase: true
-    },
-    {
-      id: 'prod-3', slug: 'combo-ritual-diario-duo',
-      name: 'Combo Ritual Diário — Vanilla & Cacao',
-      subtitle: 'A combinação perfeita para intercalar o frescor da baunilha e a intensidade do cacau.',
-      description: 'Dois potes clássicos LUMIINE com dosador de metal dourado colecionável incluso de presente. Ideal para manter sua rotina de 40 dias com consistência, praticidade e prazer.',
-      price: 139.8, promo_price: 114.9, category: 'combos',
-      badge: 'OFERTA', image: '/images/shake-hero.jpg',
-      gallery: ['/images/shake-hero.jpg', '/images/shake-chocolate.jpg'],
-      rating: 5.0, reviews_count: 164, weight: '1.2kg (2x 600g)', servings: 40,
-      flavors: ['1x Vanilla Bourbon + 1x Cacao Noir'],
-      ingredients: ['Ingredientes 100% naturais dos Shakes Vanilla Bourbon e Cacao Noir'],
-      nutritional_info: { calories: '142 kcal / dose', protein: '21.5g', carbs: '4.0g', fat: '3.4g', fiber: '5.8g', sodium: '71mg' },
-      benefits: ['Economia de R$ 25 no kit completo', 'Inclui dosador de medição dourado especial', 'Frete cortesia para todo o Brasil', 'Atendimento consultivo personalizado'],
-      stock: 35, is_featured: true, show_in_showcase: true
-    },
-    {
-      id: 'prod-4', slug: 'kit-transformacao-30-dias-wellness',
-      name: 'Kit Transformação 30 Dias + Coqueteleira Diamond',
-      subtitle: 'Ecossistema completo com 2 Shakes, coqueteleira de aço térmico fosco e guia alimentar.',
-      description: 'A experiência sensorial definitiva. Criado para transformar seus hábitos matinais com elegância. Acompanha nossa garrafa shaker térmica com acabamento branco fosco e tampa dourada.',
-      price: 199.9, promo_price: 169.9, category: 'kits',
-      badge: 'MAIS VENDIDO', image: '/images/shake-chocolate.jpg',
-      gallery: ['/images/shake-chocolate.jpg', '/images/shake-hero.jpg'],
-      rating: 4.98, reviews_count: 96, weight: '1.2kg + Shaker 700ml', servings: 40,
-      flavors: ['Vanilla Bourbon + Cacao Noir'],
-      ingredients: ['Blends proteicos nobres, superalimentos funcionais e adaptógenos naturais'],
-      nutritional_info: { calories: '140 kcal / dose', protein: '22g', carbs: '4.1g', fat: '3.2g', fiber: '5.6g', sodium: '70mg' },
-      benefits: ['Garrafa térmica de parede dupla com vácuo (mantém 12h gelado)', 'Acesso ao Guia Digital de Hábitos e Receitas Autorais', 'Envio prioritário em embalagem sustentável'],
-      stock: 28, is_featured: true, show_in_showcase: true
     }
   ];
   for (const p of products) {

@@ -89,11 +89,14 @@ export default function AdminPanelPage() {
   // Modal: Novo Produto
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProdName, setNewProdName] = useState('');
-  const [newProdCategory, setNewProdCategory] = useState<'shakes' | 'combos' | 'kits'>('shakes');
+  const [newProdCategory, setNewProdCategory] = useState<'shakes' | 'bebidas' | 'salgados'>('shakes');
   const [newProdPrice, setNewProdPrice] = useState('69.90');
 const [newProdStock, setNewProdStock] = useState('60');
   const [newProdImage, setNewProdImage] = useState('');
   const [newProdShowcase, setNewProdShowcase] = useState(true);
+  const [newProdDescription, setNewProdDescription] = useState(
+    'Blend limpo de alto padrão com proteínas vegetais puras e micronutrientes biodisponíveis.'
+  );
 
   // Modal: Editar Produto
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -169,7 +172,7 @@ const [newProdStock, setNewProdStock] = useState('60');
     addProduct({
       name: newProdName,
       subtitle: 'Nutrição de precisão com ingredientes selecionados.',
-      description: 'Blend limpo de alto padrão com proteínas vegetais puras e micronutrientes biodisponíveis.',
+      description: newProdDescription,
       price: parseFloat(newProdPrice) || 69.90,
       category: newProdCategory,
       badge: 'NOVO',
@@ -969,7 +972,7 @@ const [newProdStock, setNewProdStock] = useState('60');
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {['all', 'shakes', 'combos', 'kits'].map((cat) => (
+                  {['all', 'shakes', 'bebidas', 'salgados'].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setProductCategoryFilter(cat)}
@@ -1238,7 +1241,7 @@ const [newProdStock, setNewProdStock] = useState('60');
             <div className="border-b border-white/10 pb-3 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold text-white">Cadastrar Novo Produto</h3>
-                <p className="text-xs text-zinc-400">Adicione um shake, combo ou kit ao catálogo.</p>
+                <p className="text-xs text-zinc-400">Adicione novas opções ao catálogo.</p>
               </div>
               <button onClick={() => setShowAddProductModal(false)} className="text-zinc-500 hover:text-white">
                 <X className="w-5 h-5" />
@@ -1280,8 +1283,8 @@ const [newProdStock, setNewProdStock] = useState('60');
                     className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
                   >
                     <option value="shakes">Shakes</option>
-                    <option value="combos">Combos</option>
-                    <option value="kits">Kits</option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="salgados">Salgados</option>
                   </select>
                 </div>
                 <div>
@@ -1294,6 +1297,16 @@ const [newProdStock, setNewProdStock] = useState('60');
                     className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-zinc-300 mb-1">Descrição do Produto</label>
+                <textarea
+                  rows={4}
+                  value={newProdDescription}
+                  onChange={(e) => setNewProdDescription(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white resize-none focus:outline-none focus:border-[#D4AF37]"
+                />
               </div>
 
               <ProductImageUpload
@@ -1395,6 +1408,28 @@ const [newProdStock, setNewProdStock] = useState('60');
                     className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
                   />
                 </div>
+                <div>
+                  <label className="block font-semibold text-zinc-300 mb-1">Categoria</label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
+                  >
+                    <option value="shakes">Shakes</option>
+                    <option value="bebidas">Bebidas</option>
+                    <option value="salgados">Salgados</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-zinc-300 mb-1">Descrição do Produto</label>
+                <textarea
+                  rows={4}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white resize-none focus:outline-none focus:border-[#D4AF37]"
+                />
               </div>
 
               <ProductImageUpload
