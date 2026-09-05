@@ -146,18 +146,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  // Hydrate from API after mount
+  // Carrega dados administrativos (pedidos, despesas, estoque, fidelidade)
+  const loadAdminData = useCallback(async () => {
+    try {
+      const [ords, exps, moves, loy] = await Promise.all([
+        api('/api/orders').catch(() => null),
+        api('/api/expenses').catch(() => null),
+        api('/api/stock').catch(() => null),
+        api('/api/loyalty').catch(() => null)
+      ]);
+      if (ords && Array.isArray(ords)) setOrders(ords);
+      if (exps && Array.isArray(exps)) setExpenses(exps);
+      if (moves && Array.isArray(moves)) setStockMovements(moves);
+      if (loy?.account) {
+        setLoyalty(loy.account);
+        setLoyaltyRewards(loy.rewards || INITIAL_LOYALTY_REWARDS);
+      }
+    } catch (e) {
+      console.warn('API admin hydrate error:', e);
+    }
+  }, []);
+
+  // Hydrate produtos (público) + checa sessão admin após mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [prods, ords, exps, moves, loy] = await Promise.all([
-          api<Product[]>('/api/products').catch(() => null),
-          api('/api/orders').catch(() => null),
-          api('/api/expenses').catch(() => null),
-          api('/api/stock').catch(() => null),
-          api('/api/loyalty').catch(() => null)
-        ]);
+        const prods = await api<Product[]>('/api/products').catch(() => null);
         if (cancelled) return;
         if (prods && Array.isArray(prods) && prods.length > 0) {
           const merged = prods.map((p) => {
@@ -176,21 +191,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const final = builder && !merged.some((m) => m.slug === builder.slug) ? [builder, ...merged] : merged;
           setProducts(final);
         }
-        if (ords && Array.isArray(ords)) setOrders(ords);
-        if (exps && Array.isArray(exps)) setExpenses(exps);
-        if (moves && Array.isArray(moves)) setStockMovements(moves);
-        if (loy?.account) {
-          setLoyalty(loy.account);
-          setLoyaltyRewards(loy.rewards || INITIAL_LOYALTY_REWARDS);
-        }
       } catch (e) {
-        console.warn('API hydrate error:', e);
+        console.warn('API products hydrate error:', e);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
     })();
 
-    // Check session
+    // Check session — dados administrativos só são carregados se for admin
     (async () => {
       try {
         const me = await api<{ user: { id: string; name: string; email: string; role: string } | null }>('/api/auth/me');
@@ -199,6 +207,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (me.user.role === 'admin') {
             setIsAdminAuthenticated(true);
             setCurrentRole('admin');
+            await loadAdminData();
           }
         }
       } catch {}
@@ -207,7 +216,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadAdminData]);
 
   // Toast handler
   const showToast = (title: string, message: string, type: Toast['type'] = 'gold') => {
@@ -234,6 +243,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setIsAdminAuthenticated(true);
           setCurrentRole('admin');
           setCurrentUser(res.user);
+          void loadAdminData();
           showToast('Bem-vindo, Administrador', 'Sessão administrativa iniciada com sucesso.', 'gold');
         }
       } catch (e: any) {
@@ -242,12 +252,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     })();
     return true;
-  }, []);
+  }, [loadAdminData]);
 
   const logoutAdmin = () => {
     setIsAdminAuthenticated(false);
     setCurrentRole('customer');
     setCurrentUser(null);
+    setOrders([]);
+    setExpenses([]);
+    setStockMovements([]);
+    setLoyalty(NEUTRAL_LOYALTY_ACCOUNT);
+    setLoyaltyRewards([]);
     try {
       localStorage.removeItem('lumiine_admin_auth');
     } catch {}

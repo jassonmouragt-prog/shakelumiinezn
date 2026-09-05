@@ -1,4 +1,7 @@
 import { getSql } from '@/lib/db';
+import { getAdmin, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
+import { str, integer } from '@/lib/validate';
+import type { NextRequest } from 'next/server';
 import type { LoyaltyAccount, LoyaltyReward, LoyaltyTransaction } from '@/types';
 
 type AccountRow = {
@@ -77,6 +80,7 @@ function rewardFromRow(r: RewardRow): LoyaltyReward {
 }
 
 export async function GET() {
+  if (!(await getAdmin())) return UNAUTHORIZED_RESPONSE;
   try {
     const acctRows = (await getSql()`
       SELECT * FROM loyalty_accounts WHERE id = ${ACCOUNT_ID}
@@ -166,7 +170,8 @@ async function addPoints(points: number, description: string): Promise<LoyaltyAc
   };
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  if (!(await getAdmin())) return UNAUTHORIZED_RESPONSE;
   let body: { action?: string; points?: number; description?: string; rewardId?: string };
   try {
     body = await req.json();
@@ -176,8 +181,15 @@ export async function POST(req: Request) {
 
   try {
     if (body.action === 'points') {
-      const points = Number(body.points) || 0;
-      const account = await addPoints(points, body.description || 'Ajuste de pontos');
+      const points = integer(body.points ?? 0, -1_000_000, 1_000_000);
+      if (points === null || points === 0) {
+        return Response.json({ error: 'Pontuação inválida' }, { status: 400 });
+      }
+      const description = str(body.description, 200, { min: 1 });
+      if (!description) {
+        return Response.json({ error: 'Descrição obrigatória' }, { status: 400 });
+      }
+      const account = await addPoints(points, description);
       return Response.json({ account });
     }
 

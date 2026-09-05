@@ -151,3 +151,13 @@ CREATE TABLE stock_movements (
   date         TEXT NOT NULL DEFAULT '',
   responsible  TEXT NOT NULL DEFAULT ''
 );
+
+-- ============================================================
+-- RATE LIMIT (defesa contra abuso; migração via db/migrate.mjs)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key          TEXT NOT NULL,
+  window_start BIGINT NOT NULL,
+  count        INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (key, window_start)
+);

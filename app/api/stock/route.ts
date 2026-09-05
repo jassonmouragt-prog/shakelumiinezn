@@ -1,4 +1,7 @@
 import { getSql } from '@/lib/db';
+import { getAdmin, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
+import { str, integer, oneOf } from '@/lib/validate';
+import type { NextRequest } from 'next/server';
 import type { StockMovement } from '@/types';
 
 type Row = {
@@ -15,6 +18,7 @@ type Row = {
 type CreateInput = Omit<StockMovement, 'id' | 'date'>;
 
 export async function GET() {
+  if (!(await getAdmin())) return UNAUTHORIZED_RESPONSE;
   try {
     const rows = (await getSql()`
       SELECT * FROM stock_movements ORDER BY id DESC
@@ -37,12 +41,23 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  if (!(await getAdmin())) return UNAUTHORIZED_RESPONSE;
   let body: CreateInput;
   try {
     body = await req.json();
   } catch {
     return Response.json({ error: 'Body inválido' }, { status: 400 });
+  }
+
+  const type = oneOf(body.type, ['entrada', 'saida']);
+  const quantity = integer(body.quantity, 1, 100_000);
+  const productId = str(body.productId, 100, { min: 1 });
+  const productName = str(body.productName, 200, { min: 1 });
+  const reason = str(body.reason, 200, { min: 1 });
+  const responsible = str(body.responsible, 120) ?? '';
+  if (!type || !quantity || !productId || !productName || !reason) {
+    return Response.json({ error: 'Dados de movimentação inválidos' }, { status: 400 });
   }
 
   const id = `mov-${Date.now()}`;
@@ -55,15 +70,15 @@ export async function POST(req: Request) {
   try {
     await getSql()`
       INSERT INTO stock_movements (id, product_id, product_name, type, quantity, reason, date, responsible)
-      VALUES (${id}, ${body.productId}, ${body.productName}, ${body.type},
-        ${body.quantity}, ${body.reason}, ${date}, ${body.responsible})
+      VALUES (${id}, ${productId}, ${productName}, ${type},
+        ${quantity}, ${reason}, ${date}, ${responsible})
     `;
 
     // Atualiza o estoque do produto automaticamente
     await getSql()`
       UPDATE products
-      SET stock = GREATEST(0, stock + ${body.type === 'entrada' ? body.quantity : -body.quantity})
-      WHERE id = ${body.productId}
+      SET stock = GREATEST(0, stock + ${type === 'entrada' ? quantity : -quantity})
+      WHERE id = ${productId}
     `;
 
     return Response.json({ id, date }, { status: 201 });

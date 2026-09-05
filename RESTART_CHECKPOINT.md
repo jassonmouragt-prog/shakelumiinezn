@@ -18,8 +18,9 @@ Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon
 - Redesenho Executivo do Painel Administrativo (`/admin`): identidade Obsidian & Gold (`#09090B`, `#0E0E12`, `#18181C` com acentos `#D4AF37` / `#E8C868`), sidebar por categorias (Visão Geral, Operações, Finanças), drawer mobile, dashboard com KPIs, gestão de pedidos com filtros, catálogo com controle de visibilidade e foto, controle de estoque, painel financeiro & DRE (despesas).
 - Favicon e título da aba customizados com a identidade da marca.
 - Hero com animação 3D do produto (WebM VP9 no Chrome/Edge com transparência, fallback MP4 via Canvas nos demais).
-- Build validado com TypeScript: 17 rotas compilando sem erros. **Atenção:** se surgirem erros TS falsos em `.next/dev/types/validator.ts`, limpar a pasta `.next` antes de buildar.
-- Último commit: `5019255` em `origin/master` (branch já empurrada, deploy Vercel ativo). Porém, o redirect www→apex do `next.config.ts` e este arquivo estão **pendentes de commit/push**.
+- Build validado com TypeScript: 16 rotas compilando sem erros. **Atenção:** se surgirem erros TS falsos em `.next/dev/types/validator.ts`, limpar a pasta `.next` antes de buildar.
+- Último commit: `33fe1a5` em `origin/master` com redirect www→apex aplicado e deploy Ready.
+- **Hardening de segurança (2026-09-05)**: autenticação exigida em todas as rotas admin (`lib/auth.ts` com `getAdmin()` + 401), validação de entrada (`lib/validate.ts`) em POST/PATCH/DELETE, rate limiting por IP no Neon (`lib/rate-limit.ts`, tabela `rate_limits`) no POST de pedidos e no login, anti-enumeração no login (hash dummy via scrypt), `lib/session.ts` endurecido (secret exclusivo `SESSION_SECRET`, expiração de 7d no token), `lib/password.ts` com limite de 1024 chars, `AppContext` só carrega dados admin autenticado (e limpa no logout), headers de segurança + CSP no `next.config.ts`, `metadataBase` no layout.
 
 ## Domínio personalizado (CONCLUÍDO - 2026-09-05)
 - Domínio: **shakelumiinezn.com.br** (Registro.br), delegado via nameservers Vercel (`ns1.vercel-dns.com` / `ns2.vercel-dns.com`) — Opção B (delegação total).

@@ -1,4 +1,8 @@
 import { getSql } from '@/lib/db';
+import { getAdmin, UNAUTHORIZED_RESPONSE } from '@/lib/auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { isRecord, str, num, integer, email, phone, oneOf, jsonString } from '@/lib/validate';
+import type { NextRequest } from 'next/server';
 import type { Order, OrderStatus, CartItem } from '@/types';
 
 type CreateOrderInput = Omit<
@@ -92,6 +96,7 @@ function orderFromRow(row: OrderRow, items: CartItem[]): Order {
 }
 
 export async function GET() {
+  if (!(await getAdmin())) return UNAUTHORIZED_RESPONSE;
   try {
     const orderRows = (await getSql()`
       SELECT * FROM orders ORDER BY created_at_ts DESC
@@ -121,12 +126,64 @@ function formatNow(): string {
   return `${date} ${time}`;
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const rl = await checkRateLimit(req, 'order', { limit: 15, windowSeconds: 600 });
+  if (!rl.allowed) return rateLimitResponse(rl.retryAfter);
+
   let body: CreateOrderInput;
   try {
     body = await req.json();
   } catch {
     return Response.json({ error: 'Body inválido' }, { status: 400 });
+  }
+
+  const customerName = str(body.customerName, 120, { min: 2 });
+  const customerEmail = email(body.customerEmail);
+  const customerPhone = phone(body.customerPhone);
+  const shippingMethod = oneOf(body.shippingMethod, ['entrega', 'retirada']);
+  const paymentMethod = oneOf(body.paymentMethod, ['pix', 'cartao']);
+  const shippingCost = num(body.shippingCost, 0, 1000);
+  const subtotal = num(body.subtotal, 0, 1_000_000);
+  const discount = num(body.discount, 0, 1_000_000);
+  const total = num(body.total, 0, 1_000_000);
+  const address = isRecord(body.address)
+    ? jsonString(body.address, 4000)
+    : null;
+
+  if (
+    !customerName || !customerEmail || !customerPhone ||
+    !shippingMethod || !paymentMethod ||
+    shippingCost === null || subtotal === null || discount === null ||
+    total === null || !address
+  ) {
+    return Response.json({ error: 'Dados do pedido inválidos' }, { status: 400 });
+  }
+
+  if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > 50) {
+    return Response.json({ error: 'Pedido sem itens válidos' }, { status: 400 });
+  }
+  for (const item of body.items) {
+    const qty = integer(item.quantity, 1, 999);
+    const itemId = str(item.id, 100, { min: 1 });
+    const flavor = str(item.selectedFlavor, 100);
+    const product = isRecord(item.product) ? item.product : null;
+    if (!product) {
+      return Response.json({ error: 'Item com produto inválido' }, { status: 400 });
+    }
+    const price = num(product.price, 0, 1_000_000);
+    const promoPrice =
+      product.promoPrice == null ? null : num(product.promoPrice, 0, 1_000_000);
+    const pName = str(product.name, 200, { min: 1 });
+    const pImage = str(product.image, 500);
+    if (
+      !qty || !itemId || flavor === null ||
+      !pName || pImage === null || price === null ||
+      (product.promoPrice != null && promoPrice === null) ||
+      (product.slug != null && typeof product.slug !== 'string') ||
+      jsonString(product, 100_000) === null
+    ) {
+      return Response.json({ error: 'Item do pedido inválido' }, { status: 400 });
+    }
   }
 
   try {
@@ -136,7 +193,7 @@ export async function POST(req: Request) {
     const nextNumber = 1026 + (countRows[0]?.c ?? 0);
     const id = `ord-${nextNumber}`;
     const code = `#${nextNumber}`;
-    const pointsEarned = Math.floor(body.total);
+    const pointsEarned = Math.floor(total!);
     const createdAtStr = formatNow();
 
     await getSql()`
@@ -145,23 +202,24 @@ export async function POST(req: Request) {
         shipping_method, shipping_cost, payment_method, status, subtotal,
         discount, total, points_earned, created_at_str
       ) VALUES (
-        ${id}, ${code}, ${body.customerName}, ${body.customerEmail},
-        ${body.customerPhone}, ${JSON.stringify(body.address)},
-        ${body.shippingMethod}, ${body.shippingCost}, ${body.paymentMethod},
-        'pendente', ${body.subtotal}, ${body.discount}, ${body.total},
+        ${id}, ${code}, ${customerName}, ${customerEmail},
+        ${customerPhone}, ${address},
+        ${shippingMethod}, ${shippingCost}, ${paymentMethod},
+        'pendente', ${subtotal}, ${discount}, ${total},
         ${pointsEarned}, ${createdAtStr}
       )
     `;
 
-    for (const item of body.items ?? []) {
+    for (const item of body.items) {
       const p = item.product;
+      const promo = p.promoPrice ?? null;
       await getSql()`
         INSERT INTO order_items (
           id, order_id, product_id, product_name, product_image, price,
           promo_price, quantity, selected_flavor, product_snapshot
         ) VALUES (
           ${item.id}, ${id}, ${p.id}, ${p.name}, ${p.image}, ${p.price},
-          ${p.promoPrice ?? null}, ${item.quantity}, ${item.selectedFlavor},
+          ${promo}, ${item.quantity}, ${item.selectedFlavor},
           ${JSON.stringify(p)}
         )
       `;
