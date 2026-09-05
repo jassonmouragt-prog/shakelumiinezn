@@ -29,13 +29,13 @@ export async function POST(req: Request) {
   try {
     await getSql()`
       INSERT INTO products (
-        id, slug, name, subtitle, description, price, promo_price, reseller_price,
+        id, slug, name, subtitle, description, price, promo_price,
         category, badge, image, gallery, rating, reviews_count, weight, servings,
         flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase,
         addons
       ) VALUES (
         ${id}, ${slug}, ${body.name}, ${body.subtitle}, ${body.description},
-        ${body.price}, ${body.promoPrice ?? null}, ${body.resellerPrice},
+        ${body.price}, ${body.promoPrice ?? null},
         ${body.category}, ${body.badge ?? null}, ${body.image},
         ${JSON.stringify(body.gallery ?? [])}, ${body.rating}, ${body.reviewsCount},
         ${body.weight}, ${body.servings}, ${JSON.stringify(body.flavors ?? [])},

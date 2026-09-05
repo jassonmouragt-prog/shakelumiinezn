@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Sparkles, Users, Award, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export default function Hero() {
@@ -175,31 +175,6 @@ export default function Hero() {
                 </Link>
               </div>
 
-              {/* Divisor Prateado Sutil */}
-              <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#D9D9D9] to-transparent" />
-
-              {/* Bottom part: Revenda */}
-              <div className="space-y-3 pt-1">
-                <div className="flex items-center gap-2 text-[#C9A227]">
-                  <Users className="w-4 h-4" />
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E8A]">
-                    PARCERIA & NEGÓCIOS
-                  </span>
-                </div>
-
-                <p className="text-xs text-[#5A5A58]">
-                  Quer levar a marca para mais pessoas?
-                </p>
-
-                <Link
-                  href="/revenda"
-                  className="inline-flex items-center justify-between w-full p-3 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] hover:border-[#D4AF37]/50 transition-all text-xs font-semibold text-[#1A1A1A] group"
-                >
-                  <span className="group-hover:text-[#B8943D] transition-colors">SEJA UM REVENDEDOR</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#C9A227] group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              </div>
-
             </div>
           </div>
 
@@ -279,15 +254,6 @@ export default function Hero() {
               <p className="text-xs text-[#5A5A58] mt-1">Uma experiência pensada para transformar pequenos hábitos em rotina.</p>
               <Link href="/produtos" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#B8943D] mt-2">
                 Conheça a Linha Completa →
-              </Link>
-            </div>
-
-            <div className="h-[1px] bg-[#F0F0EC]" />
-
-            <div>
-              <p className="text-xs text-[#5A5A58]">Quer levar a marca para mais pessoas?</p>
-              <Link href="/revenda" className="inline-flex items-center gap-1.5 text-xs font-bold text-[#1A1A1A] mt-1">
-                Seja um Revendedor Oficial →
               </Link>
             </div>
           </div>

@@ -64,7 +64,7 @@ async function main() {
       name: 'Monte Seu Shake',
       subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
       description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
-      price: 28, promo_price: null, reseller_price: 28, category: 'shakes',
+      price: 28, promo_price: null, category: 'shakes',
       badge: 'MAIS VENDIDO', image: '/images/3d-product.png',
       gallery: ['/images/3d-product.png'],
       rating: 5, reviews_count: 420, weight: '500ml', servings: 1,
@@ -88,7 +88,7 @@ async function main() {
       name: 'Shake Vanilla Bourbon & Amêndoas Douradas',
       subtitle: 'Aveludado, aromático e nutritivo com notas de fava de baunilha pura.',
       description: 'Nossa assinatura mais celebrada. Uma fusão harmoniosa de proteínas vegetais isoladas, extrato orgânico de fava de baunilha Bourbon de Madagascar, leite de amêndoas prensado a frio e minerais quelatados de alta biodisponibilidade.',
-      price: 69.9, promo_price: 59.9, reseller_price: 39.9, category: 'shakes',
+      price: 69.9, promo_price: 59.9, category: 'shakes',
       badge: 'MAIS VENDIDO', image: '/images/shake-hero.jpg',
       gallery: ['/images/shake-hero.jpg', '/images/shake-chocolate.jpg'],
       rating: 4.9, reviews_count: 382, weight: '600g', servings: 20,
@@ -103,7 +103,7 @@ async function main() {
       name: 'Shake Cacao Noir & Raw Coconut',
       subtitle: 'Rico, cremoso e irresistível com cacau selvagem 100% puro.',
       description: 'Para quem não abre mão do prazer autêntico do chocolate nobre. Formulado com cacau noir monovarietal do sul da Bahia, leite de coco liofilizado e sementes de chia ativadas para uma textura de mousse cremosa.',
-      price: 74.9, promo_price: 64.9, reseller_price: 42.9, category: 'shakes',
+      price: 74.9, promo_price: 64.9, category: 'shakes',
       badge: 'NOVO', image: '/images/shake-chocolate.jpg',
       gallery: ['/images/shake-chocolate.jpg', '/images/shake-hero.jpg'],
       rating: 4.95, reviews_count: 247, weight: '600g', servings: 20,
@@ -118,7 +118,7 @@ async function main() {
       name: 'Combo Ritual Diário — Vanilla & Cacao',
       subtitle: 'A combinação perfeita para intercalar o frescor da baunilha e a intensidade do cacau.',
       description: 'Dois potes clássicos LUMIINE com dosador de metal dourado colecionável incluso de presente. Ideal para manter sua rotina de 40 dias com consistência, praticidade e prazer.',
-      price: 139.8, promo_price: 114.9, reseller_price: 79.9, category: 'combos',
+      price: 139.8, promo_price: 114.9, category: 'combos',
       badge: 'OFERTA', image: '/images/shake-hero.jpg',
       gallery: ['/images/shake-hero.jpg', '/images/shake-chocolate.jpg'],
       rating: 5.0, reviews_count: 164, weight: '1.2kg (2x 600g)', servings: 40,
@@ -133,7 +133,7 @@ async function main() {
       name: 'Kit Transformação 30 Dias + Coqueteleira Diamond',
       subtitle: 'Ecossistema completo com 2 Shakes, coqueteleira de aço térmico fosco e guia alimentar.',
       description: 'A experiência sensorial definitiva. Criado para transformar seus hábitos matinais com elegância. Acompanha nossa garrafa shaker térmica com acabamento branco fosco e tampa dourada.',
-      price: 199.9, promo_price: 169.9, reseller_price: 119.9, category: 'kits',
+      price: 199.9, promo_price: 169.9, category: 'kits',
       badge: 'MAIS VENDIDO', image: '/images/shake-chocolate.jpg',
       gallery: ['/images/shake-chocolate.jpg', '/images/shake-hero.jpg'],
       rating: 4.98, reviews_count: 96, weight: '1.2kg + Shaker 700ml', servings: 40,
@@ -147,11 +147,11 @@ async function main() {
   for (const p of products) {
     await sql`
       INSERT INTO products (id, slug, name, subtitle, description, price, promo_price,
-        reseller_price, category, badge, image, gallery, rating, reviews_count, weight,
+        category, badge, image, gallery, rating, reviews_count, weight,
         servings, flavors, ingredients, nutritional_info, benefits, stock, is_featured, show_in_showcase,
         addons)
       VALUES (${p.id}, ${p.slug}, ${p.name}, ${p.subtitle}, ${p.description}, ${p.price},
-        ${p.promo_price}, ${p.reseller_price}, ${p.category}, ${p.badge}, ${p.image},
+        ${p.promo_price}, ${p.category}, ${p.badge}, ${p.image},
         ${JSON.stringify(p.gallery)}, ${p.rating}, ${p.reviews_count}, ${p.weight},
         ${p.servings}, ${JSON.stringify(p.flavors)}, ${JSON.stringify(p.ingredients)},
         ${JSON.stringify(p.nutritional_info)}, ${JSON.stringify(p.benefits)}, ${p.stock},
@@ -199,44 +199,6 @@ async function main() {
   }
   console.log('✓ fidelidade ok');
 
-  // ---- Revendedores ----
-  console.log('Populando revendedores...');
-  const resellers = [
-    ['res-1', 'Juliana Vasconcelos', '12.345.678/0001-90', 'juliana.wellness@gmail.com', '(11) 98765-4321', 'São Paulo', 'SP', '@ju.lifestyle_wellness', 'Nutricionista & Espaço Wellness', 'Mais de 4 anos com alimentação premium', 'Instagram Oficial LUMIINE', 'Excelente perfil com clínica em Moema. Alto potencial de recorrência.', 'aprovado', 'JUWELLNESS', 14850, 42, 2970, 480, 890, 1600, '12/04/2026'],
-    ['res-2', 'Rodrigo Alcantara Studio', '98.765.432/0001-10', 'rodrigo@studioalcantara.com.br', '(21) 99123-4567', 'Rio de Janeiro', 'RJ', '@alcantara.movement', 'Studio de Pilates & Treinamento Integrado', '2 anos revendendo produtos saudáveis', 'Indicação de cliente', null, 'aprovado', 'RODRIGOALC', 9420, 27, 1884, 320, 564, 1000, '28/05/2026'],
-    ['res-3', 'Beatriz Fontes', '456.789.012-34', 'bia.fontes.fit@outlook.com', '(31) 98877-6655', 'Belo Horizonte', 'MG', '@biafontes_nutri', 'Consultora de Estilo de Vida', 'Iniciando no segmento de wellness', 'Anúncio Google', null, 'pendente', 'BIAFONTES', 0, 0, 0, 0, 0, 0, '02/09/2026']
-  ];
-  for (const r of resellers) {
-    const [id, name, document, email, phone, city, state, instagram, activity_type, sales_experience, discovery_source, notes, status, referral_code, total_sales, total_orders, total_commission, pending_commission, approved_commission, paid_commission, registered_at] = r;
-    await sql`
-      INSERT INTO resellers (id, name, document, email, phone, city, state, instagram,
-        activity_type, sales_experience, discovery_source, notes, status, referral_code,
-        total_sales, total_orders, total_commission, pending_commission, approved_commission,
-        paid_commission, registered_at)
-      VALUES (${id}, ${name}, ${document}, ${email}, ${phone}, ${city}, ${state}, ${instagram},
-        ${activity_type}, ${sales_experience}, ${discovery_source}, ${notes}, ${status},
-        ${referral_code}, ${total_sales}, ${total_orders}, ${total_commission},
-        ${pending_commission}, ${approved_commission}, ${paid_commission}, ${registered_at})
-      ON CONFLICT (id) DO NOTHING
-    `;
-  }
-  const comms = [
-    ['com-1', 'ord-1025', '#1025', '02/09/2026', 'Mariana Duarte', 169.9, 0.2, 33.98, 'pendente'],
-    ['com-2', 'ord-1020', '#1020', '31/08/2026', 'Lucas Ferraz', 229.8, 0.2, 45.96, 'aprovada'],
-    ['com-3', 'ord-1014', '#1014', '28/08/2026', 'Patricia Gomes', 114.9, 0.2, 22.98, 'paga']
-  ];
-  for (const c of comms) {
-    const [id, order_id, order_code, date, customer_name, order_value, rate, value, status] = c;
-    await sql`
-      INSERT INTO reseller_commissions (id, order_id, order_code, date, customer_name,
-        order_value, commission_rate, commission_value, status)
-      VALUES (${id}, ${order_id}, ${order_code}, ${date}, ${customer_name}, ${order_value},
-        ${rate}, ${value}, ${status})
-      ON CONFLICT (id) DO NOTHING
-    `;
-  }
-  console.log('✓ revendedores ok');
-
   // ---- Pedidos ----
   console.log('Populando pedidos...');
   const orders = [
@@ -245,7 +207,7 @@ async function main() {
       customer_phone: '(11) 97111-2233',
       address: { street: 'Alameda Gabriel Monteiro da Silva', number: '1420', neighborhood: 'Jardim Paulistano', city: 'São Paulo', state: 'SP', zipCode: '01442-001' },
       shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'preparando',
-      subtotal: 184.7, discount: 14.8, total: 169.9, points_earned: 170, reseller_code: 'JUWELLNESS',
+      subtotal: 184.7, discount: 14.8, total: 169.9, points_earned: 170,
       created_at_str: '02/09/2026 14:32', created_at_ts: '2026-09-02T14:32:00Z',
       items: [
         { id: 'item-1', product: products[0], quantity: 2, selectedFlavor: 'Vanilla Bourbon Clássica' },
@@ -257,7 +219,7 @@ async function main() {
       customer_phone: '(21) 98222-3344',
       address: { street: 'Avenida Vieira Souto', number: '480', neighborhood: 'Ipanema', city: 'Rio de Janeiro', state: 'RJ', zipCode: '22420-006' },
       shipping_method: 'entrega', shipping_cost: 0, payment_method: 'cartao', status: 'enviado',
-      subtotal: 169.9, discount: 0, total: 169.9, points_earned: 170, reseller_code: null,
+      subtotal: 169.9, discount: 0, total: 169.9, points_earned: 170,
       created_at_str: '01/09/2026 18:10', created_at_ts: '2026-09-01T18:10:00Z',
       items: [
         { id: 'item-3', product: products[3], quantity: 1, selectedFlavor: 'Vanilla Bourbon + Cacao Noir' }
@@ -268,7 +230,7 @@ async function main() {
       customer_phone: '(11) 99888-7766',
       address: { street: 'Rua Oscar Freire', number: '920', complement: 'Apto 104', neighborhood: 'Cerqueira César', city: 'São Paulo', state: 'SP', zipCode: '01426-000' },
       shipping_method: 'entrega', shipping_cost: 0, payment_method: 'pix', status: 'entregue',
-      subtotal: 114.9, discount: 0, total: 114.9, points_earned: 115, reseller_code: null,
+      subtotal: 114.9, discount: 0, total: 114.9, points_earned: 115,
       created_at_str: '28/08/2026 10:15', created_at_ts: '2026-08-28T10:15:00Z',
       items: [
         { id: 'item-4', product: products[2], quantity: 1, selectedFlavor: '1x Vanilla Bourbon + 1x Cacao Noir' }
@@ -279,11 +241,11 @@ async function main() {
     await sql`
       INSERT INTO orders (id, code, customer_name, customer_email, customer_phone, address,
         shipping_method, shipping_cost, payment_method, status, subtotal, discount, total,
-        points_earned, reseller_code, created_at_str, created_at_ts)
+        points_earned, created_at_str, created_at_ts)
       VALUES (${o.id}, ${o.code}, ${o.customer_name}, ${o.customer_email}, ${o.customer_phone},
         ${JSON.stringify(o.address)}, ${o.shipping_method}, ${o.shipping_cost}, ${o.payment_method},
         ${o.status}, ${o.subtotal}, ${o.discount}, ${o.total}, ${o.points_earned},
-        ${o.reseller_code}, ${o.created_at_str}, ${o.created_at_ts})
+        ${o.created_at_str}, ${o.created_at_ts})
       ON CONFLICT (id) DO NOTHING
     `;
     for (const it of o.items) {

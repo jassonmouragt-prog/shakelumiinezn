@@ -8,7 +8,6 @@ type ProductRow = {
   description: string;
   price: number;
   promo_price: number | null;
-  reseller_price: number;
   category: string;
   badge: string | null;
   image: string;
@@ -36,7 +35,6 @@ export function productFromRow(row: ProductRow): Product {
     description: row.description,
     price: row.price,
     promoPrice: row.promo_price ?? undefined,
-    resellerPrice: row.reseller_price,
     category: row.category as Product['category'],
     badge: (row.badge as Product['badge']) ?? null,
     image: row.image,

@@ -34,7 +34,6 @@ type OrderRow = {
   discount: number;
   total: number;
   points_earned: number;
-  reseller_code: string | null;
   created_at_str: string;
 };
 
@@ -52,7 +51,6 @@ function itemFromRow(row: ItemRow): CartItem {
       description: snapshot.description || '',
       price: row.price,
       promoPrice: row.promo_price ?? undefined,
-      resellerPrice: snapshot.reseller_price ?? row.price,
       category: snapshot.category ?? 'shakes',
       badge: snapshot.badge ?? null,
       image: row.product_image,
@@ -89,7 +87,6 @@ function orderFromRow(row: OrderRow, items: CartItem[]): Order {
     discount: row.discount,
     total: row.total,
     pointsEarned: row.points_earned,
-    resellerCode: row.reseller_code ?? undefined,
     createdAt: row.created_at_str
   };
 }
@@ -146,13 +143,13 @@ export async function POST(req: Request) {
       INSERT INTO orders (
         id, code, customer_name, customer_email, customer_phone, address,
         shipping_method, shipping_cost, payment_method, status, subtotal,
-        discount, total, points_earned, reseller_code, created_at_str
+        discount, total, points_earned, created_at_str
       ) VALUES (
         ${id}, ${code}, ${body.customerName}, ${body.customerEmail},
         ${body.customerPhone}, ${JSON.stringify(body.address)},
         ${body.shippingMethod}, ${body.shippingCost}, ${body.paymentMethod},
         'pendente', ${body.subtotal}, ${body.discount}, ${body.total},
-        ${pointsEarned}, ${body.resellerCode ?? null}, ${createdAtStr}
+        ${pointsEarned}, ${createdAtStr}
       )
     `;
 

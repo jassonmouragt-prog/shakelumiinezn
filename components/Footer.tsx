@@ -119,25 +119,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* NEGÓCIOS */}
-          <div className="space-y-3">
-            <h4 className="font-bold text-[11px] tracking-wider text-[#1A1A1A] uppercase">
-              NEGÓCIOS
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/revenda" className="hover:text-[#C9A227] transition-colors">
-                  Seja um revendedor
-                </Link>
-              </li>
-              <li>
-                <Link href="/revendedor" className="hover:text-[#C9A227] transition-colors">
-                  Portal do revendedor
-                </Link>
-              </li>
-            </ul>
-          </div>
-
           {/* SUPORTE */}
           <div className="space-y-3">
             <h4 className="font-bold text-[11px] tracking-wider text-[#1A1A1A] uppercase">

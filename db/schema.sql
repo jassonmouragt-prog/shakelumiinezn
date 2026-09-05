@@ -2,8 +2,6 @@
 
 -- Volta a depender da ordem; recria do zero se existir
 DROP TABLE IF EXISTS stock_movements;
-DROP TABLE IF EXISTS reseller_commissions;
-DROP TABLE IF EXISTS resellers;
 DROP TABLE IF EXISTS loyalty_transactions;
 DROP TABLE IF EXISTS loyalty_rewards;
 DROP TABLE IF EXISTS loyalty_accounts;
@@ -22,7 +20,6 @@ CREATE TABLE users (
   email         TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role          TEXT NOT NULL DEFAULT 'customer',
-  reseller_id   TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
@@ -37,7 +34,6 @@ CREATE TABLE products (
   description      TEXT NOT NULL DEFAULT '',
   price            DOUBLE PRECISION NOT NULL DEFAULT 0,
   promo_price      DOUBLE PRECISION,
-  reseller_price   DOUBLE PRECISION NOT NULL DEFAULT 0,
   category         TEXT NOT NULL DEFAULT 'shakes',
   badge            TEXT,
   image            TEXT NOT NULL DEFAULT '',
@@ -75,7 +71,6 @@ CREATE TABLE orders (
   discount        DOUBLE PRECISION NOT NULL DEFAULT 0,
   total           DOUBLE PRECISION NOT NULL DEFAULT 0,
   points_earned   INTEGER NOT NULL DEFAULT 0,
-  reseller_code   TEXT,
   created_at_ts   TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at_str  TEXT NOT NULL DEFAULT ''
 );
@@ -128,45 +123,6 @@ CREATE TABLE loyalty_rewards (
   description     TEXT NOT NULL DEFAULT '',
   type            TEXT NOT NULL DEFAULT 'discount',
   badge           TEXT
-);
-
--- ============================================================
--- REVENDEDORES
--- ============================================================
-CREATE TABLE resellers (
-  id                  TEXT PRIMARY KEY,
-  name                TEXT NOT NULL,
-  document            TEXT NOT NULL DEFAULT '',
-  email               TEXT NOT NULL,
-  phone               TEXT NOT NULL DEFAULT '',
-  city                TEXT NOT NULL DEFAULT '',
-  state               TEXT NOT NULL DEFAULT '',
-  instagram           TEXT NOT NULL DEFAULT '',
-  activity_type       TEXT NOT NULL DEFAULT '',
-  sales_experience    TEXT NOT NULL DEFAULT '',
-  discovery_source    TEXT NOT NULL DEFAULT '',
-  notes               TEXT,
-  status              TEXT NOT NULL DEFAULT 'pendente',
-  referral_code       TEXT NOT NULL DEFAULT '',
-  total_sales         DOUBLE PRECISION NOT NULL DEFAULT 0,
-  total_orders        INTEGER NOT NULL DEFAULT 0,
-  total_commission    DOUBLE PRECISION NOT NULL DEFAULT 0,
-  pending_commission  DOUBLE PRECISION NOT NULL DEFAULT 0,
-  approved_commission DOUBLE PRECISION NOT NULL DEFAULT 0,
-  paid_commission     DOUBLE PRECISION NOT NULL DEFAULT 0,
-  registered_at       TEXT NOT NULL DEFAULT ''
-);
-
-CREATE TABLE reseller_commissions (
-  id              TEXT PRIMARY KEY,
-  order_id        TEXT NOT NULL DEFAULT '',
-  order_code      TEXT NOT NULL DEFAULT '',
-  date            TEXT NOT NULL DEFAULT '',
-  customer_name   TEXT NOT NULL DEFAULT '',
-  order_value     DOUBLE PRECISION NOT NULL DEFAULT 0,
-  commission_rate DOUBLE PRECISION NOT NULL DEFAULT 0,
-  commission_value DOUBLE PRECISION NOT NULL DEFAULT 0,
-  status          TEXT NOT NULL DEFAULT 'pendente'
 );
 
 -- ============================================================

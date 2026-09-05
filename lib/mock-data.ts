@@ -2,10 +2,7 @@ import {
   Product,
   LoyaltyAccount,
   LoyaltyReward,
-  Reseller,
-  ResellerCommission,
   Order,
-  ResellerClient,
   Expense,
   StockMovement
 } from '@/types';
@@ -25,29 +22,6 @@ export const NEUTRAL_LOYALTY_ACCOUNT: LoyaltyAccount = {
   transactions: []
 };
 
-export const NEUTRAL_RESELLER: Reseller = {
-  id: '',
-  name: 'Revendedor',
-  document: '',
-  email: '',
-  phone: '',
-  city: '',
-  state: '',
-  instagram: '',
-  activityType: '',
-  salesExperience: '',
-  discoverySource: '',
-  status: 'pendente',
-  referralCode: '',
-  totalSales: 0,
-  totalOrders: 0,
-  totalCommission: 0,
-  pendingCommission: 0,
-  approvedCommission: 0,
-  paidCommission: 0,
-  registeredAt: ''
-};
-
 export const INITIAL_PRODUCTS: Product[] = [
   {
     id: 'menu-monte-seu-shake',
@@ -56,11 +30,10 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
     description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
     price: 28,
-    resellerPrice: 28,
     category: 'shakes',
     badge: 'MAIS VENDIDO',
-    image: '/images/3d-product.png',
-    gallery: ['/images/3d-product.png'],
+    image: '/images/img01.jpg',
+    gallery: ['/images/img01.jpg'],
     rating: 5,
     reviewsCount: 420,
     weight: '500ml',
@@ -158,7 +131,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake cremoso de baunilha com camadas da nossa calda de chocolate.',
     description: 'Uma sobremesa em copo: shake cremoso de baunilha com camadas generosas da nossa calda de chocolate, finalizado com a textura que derrete na boca.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: 'MAIS VENDIDO',
     image: '/images/shake-chocolate.jpg',
@@ -183,7 +155,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de doce de leite com borda crocante de doce de leite.',
     description: 'Clássico irresistível: shake de doce de leite com borda crocante de doce de leite, inspirado no sabor do churros.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: 'NOVO',
     image: '/images/shake-hero.jpg',
@@ -208,7 +179,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de morango com borda de uva que derrete.',
     description: 'Shake refrescante de morango com borda de uva que derrete, trazendo o sabor nostálgico do bubbaloo.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: 'NOVO',
     image: '/images/shake-hero.jpg',
@@ -233,7 +203,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de chocolate com farofa crocante, borda de chocolate e fibra de uva.',
     description: 'Interpretação LUMIINE da floresta negra: shake de chocolate com farofa crocante, borda de chocolate e fibra de uva.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: null,
     image: '/images/shake-chocolate.jpg',
@@ -258,7 +227,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de baunilha com chocolate e borda crocante de chocolate.',
     description: 'Sabor nostálgico: shake de baunilha com chocolate, borda crocante de chocolate e finalização irresistível.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: 'MAIS VENDIDO',
     image: '/images/shake-chocolate.jpg',
@@ -283,7 +251,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake cremoso de baunilha com calda quente de chocolate e borda.',
     description: 'Digitação da clássica sobremesa: shake cremoso de baunilha com calda quente de chocolate e borda da casa.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: null,
     image: '/images/shake-chocolate.jpg',
@@ -308,7 +275,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de morango com borda de morango e fibra de uva que derrete.',
     description: 'Sensação cremosa: shake de morango com borda de morango e fibra de uva que derrete na boca.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: null,
     image: '/images/shake-hero.jpg',
@@ -333,7 +299,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Shake de baunilha com fibra de uva e manga.',
     description: 'Leve e refrescante: shake de baunilha com fibra de uva e toques de manga para o dia a dia.',
     price: 46,
-    resellerPrice: 46,
     category: 'shakes',
     badge: null,
     image: '/images/shake-hero.jpg',
@@ -358,7 +323,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Bebida funcional energética e refrescante.',
     description: 'Hype Drink — bebida funcional com efeito termogênico e foco limpo para seu dia render com máxima energia.',
     price: 28,
-    resellerPrice: 0,
     category: 'bebidas',
     badge: 'MAIS VENDIDO',
     image: '/images/shake-hero.jpg',
@@ -383,7 +347,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Bebida funcional para levar com você onde for.',
     description: 'Hype Drink na garrafa — praticidade e hidratação funcional com o sabor e energia consagrados.',
     price: 30,
-    resellerPrice: 0,
     category: 'bebidas',
     badge: 'NOVO',
     image: '/images/shake-hero.jpg',
@@ -408,7 +371,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Bebida funcional diurética e termogênica.',
     description: 'Seca (Nutrix) 500ml — fórmula exclusiva para desinchar, acelerar o metabolismo e hidratar profundamente.',
     price: 30,
-    resellerPrice: 0,
     category: 'bebidas',
     badge: 'MAIS VENDIDO',
     image: '/images/shake-hero.jpg',
@@ -433,7 +395,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Refeição saudável, assada e com alta concentração proteica.',
     description: 'Coxinha proteica — massa de batata doce e frango desfiado selecionado, assada com crosta dourada e crocante.',
     price: 15,
-    resellerPrice: 0,
     category: 'salgados',
     badge: 'NOVO',
     image: '/images/shake-hero.jpg',
@@ -458,7 +419,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Pizza com massa proteica funcional e recheio generoso.',
     description: 'Pizza inteira — massa leve, molho de tomate rústico e cobertura rica em proteínas para um jantar sem culpa.',
     price: 35,
-    resellerPrice: 0,
     category: 'salgados',
     badge: null,
     image: '/images/shake-hero.jpg',
@@ -483,7 +443,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     subtitle: 'Fatia individual de pizza proteica quentinha.',
     description: 'Pizza em fatia — opção saudável e prática do cardápio de refeições para lanches rápidos.',
     price: 10,
-    resellerPrice: 0,
     category: 'salgados',
     badge: null,
     image: '/images/shake-hero.jpg',
@@ -583,142 +542,6 @@ export const INITIAL_LOYALTY_REWARDS: LoyaltyReward[] = [
   }
 ];
 
-export const INITIAL_RESELLERS: Reseller[] = [
-  {
-    id: 'res-1',
-    name: 'Juliana Vasconcelos',
-    document: '12.345.678/0001-90',
-    email: 'juliana.wellness@gmail.com',
-    phone: '(11) 98765-4321',
-    city: 'São Paulo',
-    state: 'SP',
-    instagram: '@ju.lifestyle_wellness',
-    activityType: 'Nutricionista & Espaço Wellness',
-    salesExperience: 'Mais de 4 anos com alimentação premium',
-    discoverySource: 'Instagram Oficial LUMIINE',
-    notes: 'Excelente perfil com clínica em Moema. Alto potencial de recorrência.',
-    status: 'aprovado',
-    referralCode: 'JUWELLNESS',
-    totalSales: 14850.00,
-    totalOrders: 42,
-    totalCommission: 2970.00,
-    pendingCommission: 480.00,
-    approvedCommission: 890.00,
-    paidCommission: 1600.00,
-    registeredAt: '12/04/2026'
-  },
-  {
-    id: 'res-2',
-    name: 'Rodrigo Alcantara Studio',
-    document: '98.765.432/0001-10',
-    email: 'rodrigo@studioalcantara.com.br',
-    phone: '(21) 99123-4567',
-    city: 'Rio de Janeiro',
-    state: 'RJ',
-    instagram: '@alcantara.movement',
-    activityType: 'Studio de Pilates & Treinamento Integrado',
-    salesExperience: '2 anos revendendo produtos saudáveis',
-    discoverySource: 'Indicação de cliente',
-    status: 'aprovado',
-    referralCode: 'RODRIGOALC',
-    totalSales: 9420.00,
-    totalOrders: 27,
-    totalCommission: 1884.00,
-    pendingCommission: 320.00,
-    approvedCommission: 564.00,
-    paidCommission: 1000.00,
-    registeredAt: '28/05/2026'
-  },
-  {
-    id: 'res-3',
-    name: 'Beatriz Fontes',
-    document: '456.789.012-34',
-    email: 'bia.fontes.fit@outlook.com',
-    phone: '(31) 98877-6655',
-    city: 'Belo Horizonte',
-    state: 'MG',
-    instagram: '@biafontes_nutri',
-    activityType: 'Consultora de Estilo de Vida',
-    salesExperience: 'Iniciando no segmento de wellness',
-    discoverySource: 'Anúncio Google',
-    status: 'pendente',
-    referralCode: 'BIAFONTES',
-    totalSales: 0,
-    totalOrders: 0,
-    totalCommission: 0,
-    pendingCommission: 0,
-    approvedCommission: 0,
-    paidCommission: 0,
-    registeredAt: '02/09/2026'
-  }
-];
-
-export const INITIAL_RESELLER_COMMISSIONS: ResellerCommission[] = [
-  {
-    id: 'com-1',
-    orderId: 'ord-1025',
-    orderCode: '#1025',
-    date: '02/09/2026',
-    customerName: 'Mariana Duarte',
-    orderValue: 169.90,
-    commissionRate: 0.20,
-    commissionValue: 33.98,
-    status: 'pendente'
-  },
-  {
-    id: 'com-2',
-    orderId: 'ord-1020',
-    orderCode: '#1020',
-    date: '31/08/2026',
-    customerName: 'Lucas Ferraz',
-    orderValue: 229.80,
-    commissionRate: 0.20,
-    commissionValue: 45.96,
-    status: 'aprovada'
-  },
-  {
-    id: 'com-3',
-    orderId: 'ord-1014',
-    orderCode: '#1014',
-    date: '28/08/2026',
-    customerName: 'Patricia Gomes',
-    orderValue: 114.90,
-    commissionRate: 0.20,
-    commissionValue: 22.98,
-    status: 'paga'
-  }
-];
-
-export const INITIAL_RESELLER_CLIENTS: ResellerClient[] = [
-  {
-    id: 'cli-1',
-    name: 'Mariana Duarte',
-    email: 'mariana.duarte@email.com',
-    firstOrderDate: '14/06/2026',
-    lastOrderDate: '02/09/2026',
-    totalSpent: 849.50,
-    commissionGenerated: 169.90
-  },
-  {
-    id: 'cli-2',
-    name: 'Lucas Ferraz',
-    email: 'lucas.ferraz@email.com',
-    firstOrderDate: '22/07/2026',
-    lastOrderDate: '31/08/2026',
-    totalSpent: 569.70,
-    commissionGenerated: 113.94
-  },
-  {
-    id: 'cli-3',
-    name: 'Patricia Gomes',
-    email: 'patricia.g@email.com',
-    firstOrderDate: '10/08/2026',
-    lastOrderDate: '28/08/2026',
-    totalSpent: 344.70,
-    commissionGenerated: 68.94
-  }
-];
-
 export const INITIAL_ORDERS: Order[] = [
   {
     id: 'ord-1025',
@@ -756,7 +579,6 @@ export const INITIAL_ORDERS: Order[] = [
     discount: 14.80,
     total: 169.90,
     pointsEarned: 170,
-    resellerCode: 'JUWELLNESS',
     createdAt: '02/09/2026 14:32'
   },
   {

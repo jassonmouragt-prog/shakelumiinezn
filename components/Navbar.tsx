@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingBag, User, Menu, X, Sparkles, ChevronRight, Award, Briefcase } from 'lucide-react';
+import { ShoppingBag, Menu, X, ChevronRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { cart, setIsCartOpen, currentRole, isResellerAuthenticated, resellerProfile } = useApp();
+  const { cart, setIsCartOpen } = useApp();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -53,12 +53,6 @@ export default function Navbar() {
                 Produtos
               </Link>
               <Link
-                href="/revenda"
-                className="hover:text-[#C9A227] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#C9A227] hover:after:w-full after:transition-all"
-              >
-                Revenda
-              </Link>
-              <Link
                 href="/#sobre-nos"
                 className="hover:text-[#C9A227] transition-colors py-1 relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#C9A227] hover:after:w-full after:transition-all"
               >
@@ -74,25 +68,6 @@ export default function Navbar() {
 
             {/* ACTION BUTTONS */}
             <div className="flex items-center gap-3">
-              {/* Reseller link / status */}
-              {isResellerAuthenticated ? (
-                <Link
-                  href="/revendedor"
-                  className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full bg-[#FFFDF7] border border-[#D4AF37] text-[#B8943D] hover:bg-[#FDFBF2] transition-all"
-                >
-                  <Briefcase className="w-3.5 h-3.5 text-[#C9A227]" />
-                  <span>{resellerProfile?.name ? `Olá, ${resellerProfile.name.split(' ')[0]}` : 'Portal Revendedor'}</span>
-                </Link>
-              ) : (
-                <Link
-                  href="/revendedor"
-                  className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-medium tracking-wider text-[#3A3A38] hover:text-[#C9A227] transition-colors"
-                >
-                  <User className="w-3.5 h-3.5 text-[#8E8E8A]" />
-                  Área do Revendedor
-                </Link>
-              )}
-
               {/* Cart Trigger */}
               <button
                 onClick={() => setIsCartOpen(true)}
@@ -141,14 +116,6 @@ export default function Navbar() {
               <ChevronRight className="w-4 h-4 text-[#C9A227]" />
             </Link>
             <Link
-              href="/revenda"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between py-3 border-b border-[#F0F0EC]"
-            >
-              <span>Seja um Revendedor</span>
-              <ChevronRight className="w-4 h-4 text-[#C9A227]" />
-            </Link>
-            <Link
               href="/#sobre-nos"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between py-3 border-b border-[#F0F0EC]"
@@ -173,13 +140,6 @@ export default function Navbar() {
               className="w-full flex items-center justify-center py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-sm font-semibold tracking-wider shadow-[0_4px_20px_rgba(201,162,39,0.3)]"
             >
               PEDIR AGORA
-            </Link>
-            <Link
-              href="/revendedor"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center py-3.5 rounded-full bg-[#F5F5F3] border border-[#E2E2DF] text-[#1A1A1A] text-sm font-medium"
-            >
-              Portal do Revendedor
             </Link>
           </div>
         </div>

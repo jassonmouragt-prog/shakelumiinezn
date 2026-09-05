@@ -31,7 +31,6 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
         description = ${merged.description},
         price = ${merged.price},
         promo_price = ${merged.promoPrice ?? null},
-        reseller_price = ${merged.resellerPrice},
         category = ${merged.category},
         badge = ${merged.badge ?? null},
         image = ${merged.image},

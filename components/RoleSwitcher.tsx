@@ -3,12 +3,12 @@
 import React from 'react';
 import { useApp } from '@/context/AppContext';
 import { UserRole } from '@/types';
-import { Sparkles, Briefcase, User } from 'lucide-react';
+import { Sparkles, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 export default function RoleSwitcher() {
-  const { currentRole, setCurrentRole, loyalty, currentReseller } = useApp();
+  const { currentRole, setCurrentRole, loyalty } = useApp();
   const pathname = usePathname();
   const isClube = pathname.startsWith('/clube');
 
@@ -26,13 +26,6 @@ export default function RoleSwitcher() {
       icon: Sparkles,
       badge: `${loyalty.tier} • ${loyalty.points} pts`,
       link: '/clube'
-    },
-    {
-      role: 'reseller',
-      label: 'Revendedor B2B',
-      icon: Briefcase,
-      badge: currentReseller.status.toUpperCase(),
-      link: '/revendedor'
     }
   ];
 
@@ -47,8 +40,7 @@ export default function RoleSwitcher() {
           const Icon = item.icon;
           const isSelected =
             (idx === 0 && currentRole === 'customer' && !isClube) ||
-            (idx === 1 && isClube) ||
-            (idx === 2 && currentRole === 'reseller');
+            (idx === 1 && isClube);
 
           return (
             <Link

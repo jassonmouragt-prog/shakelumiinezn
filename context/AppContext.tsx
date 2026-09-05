@@ -8,8 +8,6 @@ import {
   OrderStatus,
   LoyaltyAccount,
   LoyaltyReward,
-  Reseller,
-  ResellerCommission,
   UserRole,
   Expense,
   StockMovement
@@ -17,8 +15,7 @@ import {
 import {
   INITIAL_PRODUCTS,
   INITIAL_LOYALTY_REWARDS,
-  NEUTRAL_LOYALTY_ACCOUNT,
-  NEUTRAL_RESELLER
+  NEUTRAL_LOYALTY_ACCOUNT
 } from '@/lib/mock-data';
 
 interface Toast {
@@ -34,21 +31,9 @@ interface AppContextType {
   setCurrentRole: (role: UserRole) => void;
   currentUser: { id: string; name: string; email: string; role: string } | null;
   isAdminAuthenticated: boolean;
-  isResellerAuthenticated: boolean;
-  resellerProfile: Reseller | null;
   loginAdmin: (email: string, pass: string) => boolean;
   logoutAdmin: () => void;
-  loginReseller: (email: string, pass: string) => Promise<{ ok: boolean; error?: string }>;
-  logoutReseller: () => void;
-  registerReseller: (input: {
-    name: string;
-    email: string;
-    phone?: string;
-    city?: string;
-    state?: string;
-    password: string;
-  }) => Promise<{ ok: boolean; error?: string; referralCode?: string }>;
-  
+
   // General loading state
   isLoading: boolean;
 
@@ -79,13 +64,6 @@ interface AppContextType {
   loyaltyRewards: LoyaltyReward[];
   redeemReward: (rewardId: string) => boolean;
   addLoyaltyPoints: (points: number, description: string) => void;
-  
-  // Reseller
-  resellers: Reseller[];
-  currentReseller: Reseller;
-  commissions: ResellerCommission[];
-  submitResellerApplication: (data: Omit<Reseller, 'id' | 'status' | 'referralCode' | 'totalSales' | 'totalOrders' | 'totalCommission' | 'pendingCommission' | 'approvedCommission' | 'paidCommission' | 'registeredAt'>) => void;
-  updateResellerStatus: (resellerId: string, status: Reseller['status']) => void;
 
   // Expenses & Finance
   expenses: Expense[];
@@ -124,8 +102,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [currentRole, setCurrentRole] = useState<UserRole>('customer');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
-  const [isResellerAuthenticated, setIsResellerAuthenticated] = useState<boolean>(false);
-  const [resellerProfile, setResellerProfile] = useState<Reseller | null>(null);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     name: string;
@@ -139,8 +115,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loyalty, setLoyalty] = useState<LoyaltyAccount>(NEUTRAL_LOYALTY_ACCOUNT);
   const [loyaltyRewards, setLoyaltyRewards] = useState<LoyaltyReward[]>(INITIAL_LOYALTY_REWARDS);
-  const [resellers, setResellers] = useState<Reseller[]>([]);
-  const [commissions, setCommissions] = useState<ResellerCommission[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [stockMovements, setStockMovements] = useState<StockMovement[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -177,11 +151,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const [prods, ords, res, comms, exps, moves, loy] = await Promise.all([
+        const [prods, ords, exps, moves, loy] = await Promise.all([
           api<Product[]>('/api/products').catch(() => null),
           api('/api/orders').catch(() => null),
-          api('/api/resellers').catch(() => null),
-          api('/api/commissions').catch(() => null),
           api('/api/expenses').catch(() => null),
           api('/api/stock').catch(() => null),
           api('/api/loyalty').catch(() => null)
@@ -205,8 +177,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setProducts(final);
         }
         if (ords && Array.isArray(ords)) setOrders(ords);
-        if (res && Array.isArray(res)) setResellers(res);
-        if (comms && Array.isArray(comms)) setCommissions(comms);
         if (exps && Array.isArray(exps)) setExpenses(exps);
         if (moves && Array.isArray(moves)) setStockMovements(moves);
         if (loy?.account) {
@@ -229,14 +199,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (me.user.role === 'admin') {
             setIsAdminAuthenticated(true);
             setCurrentRole('admin');
-          } else if (me.user.role === 'revendedor') {
-            setIsResellerAuthenticated(true);
-            setCurrentRole('reseller');
-            api<{ reseller: Reseller | null }>('/api/resellers/me')
-              .then((r) => {
-                if (r?.reseller) setResellerProfile(r.reseller);
-              })
-              .catch(() => {});
           }
         }
       } catch {}
@@ -292,76 +254,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     api('/api/auth/logout', { method: 'POST' }).catch(() => {});
     showToast('Sessão Encerrada', 'Você saiu do Painel Administrativo.', 'info');
   };
-
-  const loginReseller = useCallback(
-    async (email: string, pass: string): Promise<{ ok: boolean; error?: string }> => {
-      try {
-        const res = await api<{ user: { id: string; name: string; email: string; role: string } }>(
-          '/api/resellers/login',
-          { method: 'POST', body: JSON.stringify({ email, password: pass }) }
-        );
-        if (res?.user?.role !== 'revendedor') {
-          return { ok: false, error: 'Credenciais inválidas.' };
-        }
-        setCurrentUser(res.user);
-        setIsResellerAuthenticated(true);
-        setCurrentRole('reseller');
-        const profile = await api<{ reseller: Reseller | null }>('/api/resellers/me').catch(() => null);
-        if (profile?.reseller) setResellerProfile(profile.reseller);
-        return { ok: true };
-      } catch (e: any) {
-        return { ok: false, error: e?.message || 'Credenciais inválidas.' };
-      }
-    },
-    []
-  );
-
-  const logoutReseller = () => {
-    setIsResellerAuthenticated(false);
-    setResellerProfile(null);
-    setCurrentUser(null);
-    setCurrentRole('customer');
-    api('/api/auth/logout', { method: 'POST' }).catch(() => {});
-    showToast('Sessão Encerrada', 'Você saiu da Área do Revendedor.', 'info');
-  };
-
-  const registerReseller = useCallback(
-    async (input: {
-      name: string;
-      email: string;
-      phone?: string;
-      city?: string;
-      state?: string;
-      password: string;
-    }): Promise<{ ok: boolean; error?: string; referralCode?: string }> => {
-      const body = {
-        name: input.name,
-        document: '',
-        email: input.email,
-        phone: input.phone || '',
-        city: input.city || '',
-        state: input.state || '',
-        instagram: '',
-        activityType: '',
-        salesExperience: '',
-        discoverySource: '',
-        notes: undefined,
-        password: input.password
-      };
-      try {
-        const created = await api<{ id: string; referralCode: string }>('/api/resellers', {
-          method: 'POST',
-          body: JSON.stringify(body)
-        });
-        const fresh = await api<Reseller[]>('/api/resellers').catch(() => null);
-        if (fresh) setResellers(fresh);
-        return { ok: true, referralCode: created.referralCode };
-      } catch (e: any) {
-        return { ok: false, error: e?.message || 'Erro ao cadastrar revendedor.' };
-      }
-    },
-    []
-  );
 
   // Cart actions
   const addToCart = (product: Product, quantity = 1, selectedFlavor?: string, selectedAddons?: string[], customSelections?: Record<string, string[]>) => {
@@ -531,36 +423,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  // Resellers
-  const submitResellerApplication = (data: Omit<Reseller, 'id' | 'status' | 'referralCode' | 'totalSales' | 'totalOrders' | 'totalCommission' | 'pendingCommission' | 'approvedCommission' | 'paidCommission' | 'registeredAt'>) => {
-    const newReseller: Reseller = {
-      ...data,
-      id: `res-${Date.now()}`,
-      status: 'pendente',
-      referralCode: data.name.split(' ')[0].toUpperCase() + Math.floor(Math.random() * 90 + 10),
-      totalSales: 0,
-      totalOrders: 0,
-      totalCommission: 0,
-      pendingCommission: 0,
-      approvedCommission: 0,
-      paidCommission: 0,
-      registeredAt: new Date().toLocaleDateString('pt-BR')
-    };
-
-    setResellers((prev) => [newReseller, ...prev]);
-    api('/api/resellers', { method: 'POST', body: JSON.stringify(data) }).catch(() => {});
-    showToast('Inscrição Recebida!', 'Seus dados foram enviados e estão sob análise da nossa equipe.', 'gold');
-  };
-
-  const updateResellerStatus = (resellerId: string, status: Reseller['status']) => {
-    setResellers((prev) => prev.map((r) => (r.id === resellerId ? { ...r, status } : r)));
-    api(`/api/resellers/${resellerId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status })
-    }).catch(() => {});
-    showToast('Revendedor Atualizado', `Status alterado para: ${status.toUpperCase()}`, 'info');
-  };
-
   // Products CRUD & Showcase Control
   const addProduct = (newProd: Omit<Product, 'id' | 'slug'>) => {
     const slug = newProd.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -664,8 +526,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const currentReseller = resellers[0] ?? NEUTRAL_RESELLER;
-
   return (
     <AppContext.Provider
       value={{
@@ -678,13 +538,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         },
         currentUser,
         isAdminAuthenticated,
-        isResellerAuthenticated,
-        resellerProfile,
         loginAdmin,
         logoutAdmin,
-        loginReseller,
-        logoutReseller,
-        registerReseller,
         isLoading,
         products,
         addProduct,
@@ -706,11 +561,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         loyaltyRewards,
         redeemReward,
         addLoyaltyPoints,
-        resellers,
-        currentReseller,
-        commissions,
-        submitResellerApplication,
-        updateResellerStatus,
         expenses,
         addExpense,
         deleteExpense,

@@ -9,7 +9,6 @@ import {
   DollarSign,
   Package,
   Users,
-  Briefcase,
   Layers,
   BarChart3,
   Plus,
@@ -61,10 +60,6 @@ export default function AdminPanelPage() {
     toggleProductShowcase,
     orders,
     updateOrderStatus,
-    resellers,
-    commissions,
-    updateResellerStatus,
-    registerReseller,
     expenses,
     addExpense,
     deleteExpense,
@@ -81,7 +76,7 @@ export default function AdminPanelPage() {
 
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'pedidos' | 'produtos' | 'estoque' | 'financeiro' | 'revendedores'
+    'dashboard' | 'pedidos' | 'produtos' | 'estoque' | 'financeiro'
   >('dashboard');
 
   // Search & Filters in Orders
@@ -96,8 +91,7 @@ export default function AdminPanelPage() {
   const [newProdName, setNewProdName] = useState('');
   const [newProdCategory, setNewProdCategory] = useState<'shakes' | 'combos' | 'kits'>('shakes');
   const [newProdPrice, setNewProdPrice] = useState('69.90');
-  const [newProdResellerPrice, setNewProdResellerPrice] = useState('39.90');
-  const [newProdStock, setNewProdStock] = useState('60');
+const [newProdStock, setNewProdStock] = useState('60');
   const [newProdImage, setNewProdImage] = useState('');
   const [newProdShowcase, setNewProdShowcase] = useState(true);
 
@@ -107,24 +101,12 @@ export default function AdminPanelPage() {
   const [editCategory, setEditCategory] = useState('shakes');
   const [editPrice, setEditPrice] = useState('0.00');
   const [editPromoPrice, setEditPromoPrice] = useState('');
-  const [editResellerPrice, setEditResellerPrice] = useState('0.00');
   const [editStock, setEditStock] = useState('0');
   const [editImage, setEditImage] = useState('');
   const [editShowcase, setEditShowcase] = useState(true);
   const [editSubtitle, setEditSubtitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editAddons, setEditAddons] = useState<ProductAddon[]>([]);
-
-  // Modal: Cadastrar Acesso de Revendedor
-  const [showAddResellerModal, setShowAddResellerModal] = useState(false);
-  const [resellerFormName, setResellerFormName] = useState('');
-  const [resellerFormEmail, setResellerFormEmail] = useState('');
-  const [resellerFormPhone, setResellerFormPhone] = useState('');
-  const [resellerFormCity, setResellerFormCity] = useState('');
-  const [resellerFormState, setResellerFormState] = useState('');
-  const [resellerFormPass, setResellerFormPass] = useState('');
-  const [resellerSubmitting, setResellerSubmitting] = useState(false);
-  const [resellerFormError, setResellerFormError] = useState('');
 
   // Modal: Registrar Despesa
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
@@ -147,7 +129,6 @@ export default function AdminPanelPage() {
     setEditCategory(prod.category);
     setEditPrice(String(prod.price));
     setEditPromoPrice(prod.promoPrice != null ? String(prod.promoPrice) : '');
-    setEditResellerPrice(String(prod.resellerPrice));
     setEditStock(String(prod.stock));
     setEditImage(prod.image || '');
     setEditShowcase(prod.showInShowcase !== false);
@@ -164,7 +145,6 @@ export default function AdminPanelPage() {
       category: editCategory as any,
       price: parseFloat(editPrice) || 0,
       promoPrice: editPromoPrice ? parseFloat(editPromoPrice) : undefined,
-      resellerPrice: parseFloat(editResellerPrice) || 0,
       stock: parseInt(editStock, 10) || 0,
       image: editImage,
       showInShowcase: editShowcase,
@@ -175,32 +155,6 @@ export default function AdminPanelPage() {
         .filter((a) => Boolean(a.label) || a.price > 0)
     });
     setEditingProduct(null);
-  };
-
-  const handleRegisterReseller = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResellerFormError('');
-    setResellerSubmitting(true);
-    const result = await registerReseller({
-      name: resellerFormName,
-      email: resellerFormEmail,
-      phone: resellerFormPhone,
-      city: resellerFormCity,
-      state: resellerFormState,
-      password: resellerFormPass
-    });
-    setResellerSubmitting(false);
-    if (!result.ok) {
-      setResellerFormError(result.error || 'Erro ao cadastrar revendedor.');
-      return;
-    }
-    setShowAddResellerModal(false);
-    setResellerFormName('');
-    setResellerFormEmail('');
-    setResellerFormPhone('');
-    setResellerFormCity('');
-    setResellerFormState('');
-    setResellerFormPass('');
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -217,7 +171,6 @@ export default function AdminPanelPage() {
       subtitle: 'Nutrição de precisão com ingredientes selecionados.',
       description: 'Blend limpo de alto padrão com proteínas vegetais puras e micronutrientes biodisponíveis.',
       price: parseFloat(newProdPrice) || 69.90,
-      resellerPrice: parseFloat(newProdResellerPrice) || 39.90,
       category: newProdCategory,
       badge: 'NOVO',
       image: newProdImage,
@@ -283,8 +236,7 @@ export default function AdminPanelPage() {
   // Financial calculations
   const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
   const totalExpenses = expenses.reduce((acc, exp) => acc + exp.amount, 0);
-  const totalCommissions = commissions.reduce((acc, c) => acc + c.commissionValue, 0);
-  const netProfit = totalRevenue - totalExpenses - totalCommissions;
+  const netProfit = totalRevenue - totalExpenses;
   const netMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0.0';
 
   // Low stock products count
@@ -308,7 +260,7 @@ export default function AdminPanelPage() {
 
   // Nav items configuration
   interface NavItem {
-    id: 'dashboard' | 'pedidos' | 'produtos' | 'estoque' | 'financeiro' | 'revendedores';
+    id: 'dashboard' | 'pedidos' | 'produtos' | 'estoque' | 'financeiro';
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number | string | null;
@@ -352,19 +304,13 @@ export default function AdminPanelPage() {
       ]
     },
     {
-      group: 'FINANÇAS & REDE',
+      group: 'FINANÇAS',
       items: [
         {
           id: 'financeiro',
           label: 'Despesas & Margens',
           icon: DollarSign,
           badge: null
-        },
-        {
-          id: 'revendedores',
-          label: 'Revendedores & Comissões',
-          icon: Briefcase,
-          badge: resellers.length
         }
       ]
     }
@@ -678,7 +624,6 @@ export default function AdminPanelPage() {
                 {activeTab === 'produtos' && 'Catálogo & Amostras da Vitrine'}
                 {activeTab === 'estoque' && 'Movimentações & Auditoria de Estoque'}
                 {activeTab === 'financeiro' && 'Demonstrativo Financeiro & Margens'}
-                {activeTab === 'revendedores' && 'Rede de Revendedores & Comissões'}
               </h2>
             </div>
           </div>
@@ -692,15 +637,6 @@ export default function AdminPanelPage() {
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Novo Produto</span>
-              </button>
-            )}
-            {activeTab === 'revendedores' && (
-              <button
-                onClick={() => setShowAddResellerModal(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-black text-xs font-bold hover:brightness-110 shadow-[0_2px_15px_rgba(201,162,39,0.3)] transition-all"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Cadastrar Revendedor</span>
               </button>
             )}
             {activeTab === 'financeiro' && (
@@ -759,24 +695,6 @@ export default function AdminPanelPage() {
                   </div>
                   <div className="text-[11px] text-zinc-400 font-medium">
                     {expenses.length} lançamentos de custos
-                  </div>
-                </div>
-
-                {/* 3. Comissões */}
-                <div className="relative overflow-hidden rounded-2xl bg-[#121216] border border-white/[0.08] p-6 space-y-3 hover:border-[#D4AF37]/40 transition-all group">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-400">
-                      Comissões a Repassar
-                    </span>
-                    <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 flex items-center justify-center text-[#E8C868]">
-                      <Briefcase className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-bold text-[#E8C868] tracking-tight">
-                    - R$ {totalCommissions.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-[11px] text-zinc-400 font-medium">
-                    {commissions.length} comissões geradas
                   </div>
                 </div>
 
@@ -880,10 +798,6 @@ export default function AdminPanelPage() {
                         <strong className="text-[#D4AF37]">
                           {products.filter((p) => p.showInShowcase !== false).length} itens
                         </strong>
-                      </div>
-                      <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs">
-                        <span className="text-zinc-400">Revendedores Ativos:</span>
-                        <strong className="text-emerald-400">{resellers.length} parceiros</strong>
                       </div>
                     </div>
                   </div>
@@ -1073,7 +987,6 @@ export default function AdminPanelPage() {
                       <th className="py-3 px-3">Produto</th>
                       <th className="py-3 px-3">Categoria</th>
                       <th className="py-3 px-3">Preço Consumidor</th>
-                      <th className="py-3 px-3">Preço Revendedor</th>
                       <th className="py-3 px-3">Estoque</th>
                       <th className="py-3 px-3 text-center">Vitrine Pública</th>
                       <th className="py-3 px-3 text-right">Ações</th>
@@ -1095,7 +1008,6 @@ export default function AdminPanelPage() {
                           </td>
                           <td className="py-3.5 px-3 uppercase font-semibold text-zinc-400">{prod.category}</td>
                           <td className="py-3.5 px-3 font-bold text-white">R$ {prod.price.toFixed(2)}</td>
-                          <td className="py-3.5 px-3 font-bold text-[#E8C868]">R$ {prod.resellerPrice.toFixed(2)}</td>
                           <td className="py-3.5 px-3">
                             <span
                               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -1255,7 +1167,7 @@ export default function AdminPanelPage() {
                 <div>
                   <h3 className="text-base font-bold text-white">Demonstrativo de Resultado & Despesas</h3>
                   <p className="text-xs text-zinc-400">
-                    Acompanhamento contábil de receitas, custos fixos, variáveis e comissionamentos.
+                    Acompanhamento contábil de receitas, custos fixos e variáveis.
                   </p>
                 </div>
               </div>
@@ -1311,202 +1223,8 @@ export default function AdminPanelPage() {
           )}
 
           {/* TAB 6: REVENDEDORES */}
-          {activeTab === 'revendedores' && (
-            <div className="bg-[#121216] rounded-2xl border border-white/[0.08] p-6 sm:p-8 shadow-xs animate-fade-in space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6">
-                <div>
-                  <h3 className="text-base font-bold text-white">Parceiros Revendedores & Comissões</h3>
-                  <p className="text-xs text-zinc-400">
-                    Cadastre acessos exclusivos e audite os volumes de comissão gerados pela rede.
-                  </p>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-white/[0.08] text-zinc-500 uppercase tracking-wider text-[10px]">
-                      <th className="py-3 px-3">Revendedor</th>
-                      <th className="py-3 px-3">Cidade / UF</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-3">Total Vendido</th>
-                      <th className="py-3 px-3">Comissões</th>
-                      <th className="py-3 px-3 text-right">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
-                    {resellers.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="py-8 text-center text-zinc-500">
-                          Nenhum revendedor cadastrado no momento. Clique em &quot;Cadastrar Revendedor&quot; para criar o primeiro.
-                        </td>
-                      </tr>
-                    ) : (
-                      resellers.map((res) => (
-                        <tr key={res.id} className="hover:bg-white/[0.02]">
-                          <td className="py-3.5 px-3">
-                            <strong className="text-white block">{res.name}</strong>
-                            <span className="text-[11px] text-zinc-500">{res.email}</span>
-                          </td>
-                          <td className="py-3.5 px-3 text-zinc-400">{res.city}/{res.state}</td>
-                          <td className="py-3.5 px-3">
-                            <span
-                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                                res.status === 'aprovado'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                  : res.status === 'pendente'
-                                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
-                              }`}
-                            >
-                              {res.status}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-3 font-bold text-white">
-                            R$ {res.totalSales.toFixed(2)}
-                          </td>
-                          <td className="py-3.5 px-3 font-bold text-[#E8C868]">
-                            R$ {res.totalCommission.toFixed(2)}
-                          </td>
-                          <td className="py-3.5 px-3 text-right space-x-1.5">
-                            <button
-                              onClick={() => updateResellerStatus(res.id, 'aprovado')}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold transition-colors"
-                            >
-                              Aprovar
-                            </button>
-                            <button
-                              onClick={() => updateResellerStatus(res.id, 'bloqueado')}
-                              className="px-2.5 py-1 rounded-lg bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 text-[10px] font-bold transition-colors"
-                            >
-                              Bloquear
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
         </main>
       </div>
-
-      {/* MODAL: CADASTRO DE REVENDEDOR */}
-      {showAddResellerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#121216] rounded-2xl border border-white/15 p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-5 animate-scale">
-            <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-white">Cadastrar Revendedor</h3>
-                <p className="text-xs text-zinc-400">Cria a conta de acesso para a Área do Revendedor.</p>
-              </div>
-              <button onClick={() => setShowAddResellerModal(false)} className="text-zinc-500 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleRegisterReseller} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-zinc-300 mb-1">Nome Completo *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Mariana Duarte"
-                  value={resellerFormName}
-                  onChange={(e) => setResellerFormName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-zinc-300 mb-1">Email de Login *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="mariana@email.com"
-                  value={resellerFormEmail}
-                  onChange={(e) => setResellerFormEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-zinc-300 mb-1">Senha de Acesso *</label>
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  placeholder="Mínimo 6 caracteres"
-                  value={resellerFormPass}
-                  onChange={(e) => setResellerFormPass(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-zinc-300 mb-1">WhatsApp</label>
-                  <input
-                    type="text"
-                    placeholder="(11) 99999-9999"
-                    value={resellerFormPhone}
-                    onChange={(e) => setResellerFormPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-zinc-300 mb-1">Cidade</label>
-                  <input
-                    type="text"
-                    placeholder="São Paulo"
-                    value={resellerFormCity}
-                    onChange={(e) => setResellerFormCity(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-zinc-300 mb-1">UF</label>
-                <input
-                  type="text"
-                  placeholder="SP"
-                  maxLength={2}
-                  value={resellerFormState}
-                  onChange={(e) => setResellerFormState(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
-                />
-              </div>
-
-              {resellerFormError && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[11px] text-red-400">
-                  {resellerFormError}
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddResellerModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors font-bold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={resellerSubmitting}
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#C9A227] to-[#D4AF37] text-black font-bold hover:brightness-110 transition-all disabled:opacity-50"
-                >
-                  {resellerSubmitting ? 'Cadastrando...' : 'Cadastrar Acesso'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* MODAL: NOVO PRODUTO */}
       {showAddProductModal && (
@@ -1543,16 +1261,6 @@ export default function AdminPanelPage() {
                     required
                     value={newProdPrice}
                     onChange={(e) => setNewProdPrice(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-zinc-300 mb-1">Preço Revenda (R$)</label>
-                  <input
-                    type="text"
-                    required
-                    value={newProdResellerPrice}
-                    onChange={(e) => setNewProdResellerPrice(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
                   />
                 </div>
@@ -1672,16 +1380,6 @@ export default function AdminPanelPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-zinc-300 mb-1">Preço Revenda (R$)</label>
-                  <input
-                    type="text"
-                    required
-                    value={editResellerPrice}
-                    onChange={(e) => setEditResellerPrice(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
-                  />
-                </div>
                 <div>
                   <label className="block font-semibold text-zinc-300 mb-1">Estoque</label>
                   <input

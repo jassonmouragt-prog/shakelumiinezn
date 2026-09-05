@@ -30,7 +30,6 @@ export interface Product {
   description: string;
   price: number;
   promoPrice?: number;
-  resellerPrice: number;
   category: 'shakes' | 'bebidas' | 'salgados' | 'combos' | 'kits' | 'novidades' | 'mais-vendidos' | string;
   badge?: 'MAIS VENDIDO' | 'NOVO' | 'OFERTA' | null;
   image: string;
@@ -92,7 +91,6 @@ export interface Order {
   discount: number;
   total: number;
   pointsEarned: number;
-  resellerCode?: string;
   createdAt: string;
 }
 
@@ -129,54 +127,6 @@ export interface LoyaltyAccount {
   referralCount: number;
   referralPointsEarned: number;
   transactions: LoyaltyTransaction[];
-}
-
-export type ResellerStatus = 'pendente' | 'aprovado' | 'rejeitado' | 'bloqueado';
-
-export interface Reseller {
-  id: string;
-  name: string;
-  document: string; // CPF or CNPJ
-  email: string;
-  phone: string;
-  city: string;
-  state: string;
-  instagram: string;
-  activityType: string;
-  salesExperience: string;
-  discoverySource: string;
-  notes?: string;
-  status: ResellerStatus;
-  referralCode: string;
-  totalSales: number;
-  totalOrders: number;
-  totalCommission: number;
-  pendingCommission: number;
-  approvedCommission: number;
-  paidCommission: number;
-  registeredAt: string;
-}
-
-export interface ResellerCommission {
-  id: string;
-  orderId: string;
-  orderCode: string;
-  date: string;
-  customerName: string;
-  orderValue: number;
-  commissionRate: number; // e.g. 0.20 for 20%
-  commissionValue: number;
-  status: 'pendente' | 'aprovada' | 'paga';
-}
-
-export interface ResellerClient {
-  id: string;
-  name: string;
-  email: string;
-  firstOrderDate: string;
-  lastOrderDate: string;
-  totalSpent: number;
-  commissionGenerated: number;
 }
 
 export type ExpenseCategory =
@@ -216,4 +166,4 @@ export interface StockMovement {
   responsible: string;
 }
 
-export type UserRole = 'customer' | 'reseller' | 'admin';
+export type UserRole = 'customer' | 'admin';
