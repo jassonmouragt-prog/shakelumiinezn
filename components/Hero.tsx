@@ -20,10 +20,12 @@ export default function Hero() {
   };
 
   const heroProduct =
-    products.find((p) => p.slug === 'monte-seu-shake') ??
     products.find((p) => p.name === 'Hype Drink') ??
+    products.find((p) => p.slug === 'monte-seu-shake') ??
     products.find((p) => p.price > 0) ??
     products[0];
+
+  const isHeroBuilder = (heroProduct?.customizationSteps?.length ?? 0) > 0;
 
   return (
     <section
@@ -132,7 +134,9 @@ export default function Hero() {
                 <Sparkles className="w-3 h-3 text-[#C9A227]" />
                 <span>{heroProduct?.name}</span>
                 <span className="text-[#B8943D] font-bold ml-1">
-                  {heroProduct ? `A partir de R$ ${heroProduct.price.toFixed(2).replace('.', ',')}` : ''}
+                  {heroProduct
+                    ? `${isHeroBuilder ? 'A partir de ' : ''}R$ ${heroProduct.price.toFixed(2).replace('.', ',')}`
+                    : ''}
                 </span>
               </div>
             </Link>
@@ -253,10 +257,10 @@ export default function Hero() {
           {/* 4. CTAs */}
           <div className="w-full max-w-xs flex flex-col gap-3">
             <Link
-              href={`/produto/${heroProduct?.slug ?? 'monte-seu-shake'}`}
+              href={`/produto/${heroProduct?.slug ?? 'hype-drink'}`}
               className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider shadow-[0_4px_20px_rgba(201,162,39,0.3)] flex items-center justify-center gap-2"
             >
-              <span>MONTAR MEU SHAKE</span>
+              <span>PEDIR AGORA</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
