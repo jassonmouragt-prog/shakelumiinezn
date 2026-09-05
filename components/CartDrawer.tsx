@@ -43,17 +43,20 @@ export default function CartDrawer() {
 
   const [customerName, setCustomerName] = useState('');
   const [nameError, setNameError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isCartOpen) return null;
 
-  const handleFinalize = () => {
+  const handleFinalize = async () => {
     if (!customerName.trim()) {
       setNameError('Informe seu nome para enviar o pedido.');
       return;
     }
     setNameError('');
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-    const newOrder = createOrder({
+    const newOrder = await createOrder({
       customerName: customerName.trim(),
       customerEmail: '',
       customerPhone: '',
@@ -74,6 +77,10 @@ export default function CartDrawer() {
       discount: 0,
       total: cartSubtotal
     });
+
+    setIsSubmitting(false);
+
+    if (!newOrder) return;
 
     setCustomerName('');
 
@@ -289,10 +296,17 @@ export default function CartDrawer() {
 
               <button
                 onClick={handleFinalize}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 active:scale-[0.99] transition-all shadow-[0_4px_20px_rgba(201,162,39,0.3)]"
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-white text-xs font-bold tracking-wider hover:brightness-105 active:scale-[0.99] transition-all shadow-[0_4px_20px_rgba(201,162,39,0.3)] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
               >
-                <span>FINALIZAR PEDIDO</span>
-                <ArrowRight className="w-4 h-4" />
+                {isSubmitting ? (
+                  <span>ENVIANDO PEDIDO...</span>
+                ) : (
+                  <>
+                    <span>FINALIZAR PEDIDO</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#8E8E8A]">

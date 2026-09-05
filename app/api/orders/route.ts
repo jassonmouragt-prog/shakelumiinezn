@@ -194,48 +194,71 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const countRows = (await getSql()`
-      SELECT COUNT(*)::int AS c FROM orders
-    `) as unknown as { c: number }[];
-    const nextNumber = 1026 + (countRows[0]?.c ?? 0);
-    const id = `ord-${nextNumber}`;
-    const code = `#${nextNumber}`;
+    const db = getSql();
+    const nextNumberSql = () =>
+      db`
+        SELECT MAX(CAST(regexp_replace(code, '[^0-9]', '', 'g') AS integer)) AS max_code
+        FROM orders
+      `.then(
+        (rows) => rows as unknown as { max_code: number | null }[]
+      );
+
+    const maxRows = await nextNumberSql();
+    let nextNumber = (maxRows[0]?.max_code ?? 1025) + 1;
     const pointsEarned = Math.floor(total!);
     const createdAtStr = formatNow();
 
-    await getSql()`
-      INSERT INTO orders (
-        id, code, customer_name, customer_email, customer_phone, address,
-        shipping_method, shipping_cost, payment_method, status, subtotal,
-        discount, total, points_earned, created_at_str
-      ) VALUES (
-        ${id}, ${code}, ${customerName}, ${customerEmail},
-        ${customerPhone}, ${address},
-        ${shippingMethod}, ${shippingCost}, ${paymentMethod},
-        'pendente', ${subtotal}, ${discount}, ${total},
-        ${pointsEarned}, ${createdAtStr}
-      )
-    `;
+    // Pequeno loop de segurança para evitar colisão de código em concorrência
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const id = `ord-${nextNumber}`;
+      const code = `#${nextNumber}`;
 
-    for (const item of body.items) {
-      const p = item.product;
-      const promo = p.promoPrice ?? null;
-      await getSql()`
-        INSERT INTO order_items (
-          id, order_id, product_id, product_name, product_image, price,
-          promo_price, quantity, selected_flavor, product_snapshot
-        ) VALUES (
-          ${item.id}, ${id}, ${p.id}, ${p.name}, ${p.image}, ${p.price},
-          ${promo}, ${item.quantity}, ${item.selectedFlavor},
-          ${JSON.stringify(p)}
-        )
-      `;
+      const queries = [
+        db`
+          INSERT INTO orders (
+            id, code, customer_name, customer_email, customer_phone, address,
+            shipping_method, shipping_cost, payment_method, status, subtotal,
+            discount, total, points_earned, created_at_str
+          ) VALUES (
+            ${id}, ${code}, ${customerName}, ${customerEmail},
+            ${customerPhone}, ${address},
+            ${shippingMethod}, ${shippingCost}, ${paymentMethod},
+            'pendente', ${subtotal}, ${discount}, ${total},
+            ${pointsEarned}, ${createdAtStr}
+          )
+        `,
+        ...body.items.map((item) => {
+          const p = item.product;
+          const promo = p.promoPrice ?? null;
+          return db`
+            INSERT INTO order_items (
+              id, order_id, product_id, product_name, product_image, price,
+              promo_price, quantity, selected_flavor, product_snapshot
+            ) VALUES (
+              ${item.id}, ${id}, ${p.id}, ${p.name}, ${p.image}, ${p.price},
+              ${promo}, ${item.quantity}, ${item.selectedFlavor},
+              ${JSON.stringify(p)}
+            )
+          `;
+        })
+      ];
+
+      try {
+        await db.transaction(queries);
+      } catch (e: any) {
+        const duplicate = e?.code === '23505' || /duplicate/.test(e?.message || '');
+        if (!duplicate || attempt === 2) throw e;
+        const mm = await nextNumberSql();
+        nextNumber = (mm[0]?.max_code ?? 1025) + 1;
+        continue;
+      }
+
+      return Response.json(
+        { id, code, pointsEarned, createdAt: createdAtStr },
+        { status: 201 }
+      );
     }
-
-    return Response.json(
-      { id, code, pointsEarned, createdAt: createdAtStr },
-      { status: 201 }
-    );
+    return Response.json({ error: 'Erro ao criar pedido' }, { status: 500 });
   } catch (e) {
     console.error('POST /api/orders error:', e);
     return Response.json({ error: 'Erro ao criar pedido' }, { status: 500 });

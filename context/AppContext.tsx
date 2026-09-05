@@ -56,7 +56,7 @@ interface AppContextType {
   
   // Orders
   orders: Order[];
-  createOrder: (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>) => Order;
+  createOrder: (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>) => Promise<Order | null>;
   updateOrderStatus: (orderId: string, newStatus: OrderStatus) => void;
   
   // Loyalty
@@ -343,51 +343,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, 0);
 
   // Orders
-  const createOrder = (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>) => {
-    const newCodeNumber = 1026 + orders.length;
-    const newOrder: Order = {
-      ...orderData,
-      id: `ord-${newCodeNumber}`,
-      code: `#${newCodeNumber}`,
-      createdAt: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      status: 'pendente',
-      pointsEarned: Math.floor(orderData.total)
-    };
+  const createOrder = async (orderData: Omit<Order, 'id' | 'code' | 'createdAt' | 'status' | 'pointsEarned'>): Promise<Order | null> => {
+    try {
+      const saved = await api<{
+        id: string;
+        code: string;
+        createdAt: string;
+        pointsEarned: number;
+      }>('/api/orders', { method: 'POST', body: JSON.stringify(orderData) });
 
-    const updatedOrders = [newOrder, ...orders];
-    setOrders(updatedOrders);
+      const newOrder: Order = {
+        ...orderData,
+        id: saved.id,
+        code: saved.code,
+        createdAt: saved.createdAt,
+        status: 'pendente',
+        pointsEarned: saved.pointsEarned ?? Math.floor(orderData.total)
+      };
 
-    // Persistir no banco
-    api('/api/orders', { method: 'POST', body: JSON.stringify(orderData) })
-      .then(async (saved: any) => {
-        // Reajusta code/id com o retornado do servidor
-        if (saved?.id && saved?.code) {
-          setOrders((prev) =>
-            prev.map((o) =>
-              o.id === newOrder.id
-                ? { ...o, id: saved.id, code: saved.code, createdAt: saved.createdAt, pointsEarned: saved.pointsEarned }
-                : o
-            )
-          );
-        }
-        // Atualiza pontos de fidelidade apenas quando o admin confirmar (status → pago)
-        if (saved?.pointsEarned && saved.pointsEarned > 0) {
-          setOrders((prev) =>
-            prev.map((o) =>
-              o.id === newOrder.id
-                ? { ...o, pointsEarned: saved.pointsEarned }
-                : o
-            )
-          );
-        }
-      })
-      .catch(() => {});
+      setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== saved.id)]);
 
-    clearCart();
-    setIsCartOpen(false);
+      clearCart();
+      setIsCartOpen(false);
 
-    showToast('Pedido Confirmado!', `Seu pedido ${newOrder.code} foi registrado com sucesso.`, 'gold');
-    return newOrder;
+      showToast('Pedido Confirmado!', `Seu pedido ${saved.code} foi registrado com sucesso.`, 'gold');
+      return newOrder;
+    } catch (e: any) {
+      showToast(
+        'Não foi possível registrar o pedido no sistema',
+        e?.message || 'Ocorreu um erro ao enviar. Revise os dados e tente novamente.',
+        'info'
+      );
+      return null;
+    }
   };
 
   const updateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
@@ -407,13 +395,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (res?.account) setLoyalty(res.account);
           showToast('Pontos Creditados', `${points} pontos adicionados na conta de fidelidade.`, 'gold');
         })
-.catch((e: any) => {
-        showToast(
-          'Não foi possível registrar o pedido no sistema',
-          e?.message || 'Ocorreu um erro ao enviar. Revise os dados e tente novamente.',
-          'info'
-        );
-      });
+        .catch(() => {
+          showToast('Não foi possível creditar os pontos', 'Erro ao atualizar a conta de fidelidade.', 'info');
+        });
     }
     showToast('Status Atualizado', `Pedido atualizado para: ${newStatus.toUpperCase()}`, 'info');
   };
