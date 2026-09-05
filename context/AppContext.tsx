@@ -110,6 +110,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   } | null>(null);
 
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -194,7 +195,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } catch (e) {
         console.warn('API products hydrate error:', e);
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+          setProductsLoaded(true);
+        }
       }
     })();
 
@@ -217,6 +221,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, [loadAdminData]);
+
+  // Corrige snapshots do carrinho com dados atuais do catálogo
+  // (evita itens antigos do localStorage falharem a validação do servidor)
+  useEffect(() => {
+    if (!productsLoaded || cart.length === 0) return;
+    setCart((prev) =>
+      prev.map((item) => {
+        const fresh = products.find((p) => p.id === item.product.id || p.slug === item.product.slug);
+        return fresh ? { ...item, product: fresh } : item;
+      })
+    );
+  }, [products, productsLoaded]);
 
   // Real-time: painel admin atualiza os pedidos automaticamente (polling leve)
   useEffect(() => {

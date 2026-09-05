@@ -182,15 +182,19 @@ export async function POST(req: NextRequest) {
       product.promoPrice == null ? null : num(product.promoPrice, 0, 1_000_000);
     const pName = str(product.name, 200, { min: 1 });
     const pImage = str(product.image, 500);
-    if (
-      !qty || !itemId || flavor === null ||
-      !pName || pImage === null || price === null ||
-      (product.promoPrice != null && promoPrice === null) ||
-      (product.slug != null && typeof product.slug !== 'string') ||
-      jsonString(product, 100_000) === null
-    ) {
-      return Response.json({ error: 'Item do pedido inválido' }, { status: 400 });
-    }
+    
+    // O mock-data inteiro embutido no product excede 100kb às vezes. Limite seguro aumentado para 500kb.
+    const snapshotStr = jsonString(product, 500_000);
+
+    if (!qty) return Response.json({ error: `Item "${pName}": Quantidade inválida` }, { status: 400 });
+    if (!itemId) return Response.json({ error: `Item "${pName}": ID inválido` }, { status: 400 });
+    if (flavor === null) return Response.json({ error: `Item "${pName}": Sabor inválido` }, { status: 400 });
+    if (!pName) return Response.json({ error: 'Item com nome inválido' }, { status: 400 });
+    if (pImage === null) return Response.json({ error: `Item "${pName}": Imagem inválida` }, { status: 400 });
+    if (price === null) return Response.json({ error: `Item "${pName}": Preço inválido` }, { status: 400 });
+    if (product.promoPrice != null && promoPrice === null) return Response.json({ error: `Item "${pName}": Preço promocional inválido` }, { status: 400 });
+    if (product.slug != null && typeof product.slug !== 'string') return Response.json({ error: `Item "${pName}": Slug inválido` }, { status: 400 });
+    if (snapshotStr === null) return Response.json({ error: `Item "${pName}": Dados excedem o tamanho permitido` }, { status: 400 });
   }
 
   try {
@@ -227,15 +231,17 @@ export async function POST(req: NextRequest) {
             ${pointsEarned}, ${createdAtStr}
           )
         `,
-        ...body.items.map((item) => {
+        ...body.items.map((item, itemIdx) => {
           const p = item.product;
           const promo = p.promoPrice ?? null;
+          // Garante ID único mesmo que venha repetido no payload do carrinho
+          const itemId = `${item.id}-${id}-${itemIdx}`;
           return db`
             INSERT INTO order_items (
               id, order_id, product_id, product_name, product_image, price,
               promo_price, quantity, selected_flavor, product_snapshot
             ) VALUES (
-              ${item.id}, ${id}, ${p.id}, ${p.name}, ${p.image}, ${p.price},
+              ${itemId}, ${id}, ${p.id}, ${p.name}, ${p.image}, ${p.price},
               ${promo}, ${item.quantity}, ${item.selectedFlavor},
               ${JSON.stringify(p)}
             )
