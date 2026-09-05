@@ -91,6 +91,10 @@ export default function SingleProductPage() {
   const basePrice = product.promoPrice || product.price;
   const totalPrice = (basePrice + addonsTotal + stepsTotal) * quantity;
 
+  const totalItemsSelected =
+    steps.reduce((acc, step) => acc + (selections[step.id] ?? []).length, 0) +
+    selectedAddons.length;
+
   const handleAddToCart = () => {
     if (isBuilder) {
       const missing = steps.filter((s) => s.required && (selections[s.id] ?? []).length === 0);
@@ -206,6 +210,25 @@ export default function SingleProductPage() {
                   </span>
                 )}
               </div>
+
+              {/* Resumo acumulativo da montagem (atualiza a cada seleção) */}
+              {isBuilder && (
+                <div className="flex items-center gap-2 pt-1 flex-wrap">
+                  <span className="text-[10px] font-bold text-[#1A1A1A] bg-[#FAFAF8] border border-[#D4AF37]/30 rounded-full px-2.5 py-1">
+                    {totalItemsSelected} {totalItemsSelected === 1 ? 'item selecionado' : 'itens selecionados'}
+                  </span>
+                  {addonsTotal > 0 && (
+                    <span className="text-[10px] font-bold text-[#B8943D] bg-[#FAFAF8] border border-[#D4AF37]/30 rounded-full px-2.5 py-1">
+                      + R$ {addonsTotal.toFixed(2).replace('.', ',')} em adicionais
+                    </span>
+                  )}
+                  {totalItemsSelected > 0 && (
+                    <span className="text-[11px] font-bold text-[#1A1A1A]">
+                      Total da montagem: R$ {(basePrice + addonsTotal + stepsTotal).toFixed(2).replace('.', ',')}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Seleção de Sabor / Construtor de Montagem (iFood) */}
               {isBuilder ? (

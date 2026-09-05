@@ -28,7 +28,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     slug: 'monte-seu-shake',
     name: 'Monte Seu Shake',
     subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
-    description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
+    description: 'O protagonista do Shake Lumiine ZN: você escolhe as bebidas funcionais, as bases, as texturas, as cortesias, os sabores e os adicionais que quiser — tudo é acumulativo e montado na hora.',
     price: 28,
     category: 'shakes',
     badge: 'MAIS VENDIDO',
@@ -41,7 +41,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     flavors: [],
     ingredients: ['Proteína Vegetal Premium', 'Base Leite ou Nutrev (Lac Free)', 'Sabores Naturais', 'Adicionais Funcionais'],
     nutritionalInfo: { calories: '180 kcal', protein: '22g', carbs: '14g', fat: '3.5g', fiber: '5g', sodium: '60mg' },
-    benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Impossível enjoar: 3 sabores combinados'],
+    benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Combine quantos sabores quiser'],
     addons: [
       { id: 'add-borda', label: 'Borda', price: 8 },
       { id: 'add-calda-quente', label: 'Calda Quente', price: 8 },
@@ -55,9 +55,9 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'bebida',
         title: 'Bebidas Funcionais',
-        subtitle: 'Escolha a bebida do seu shake',
-        type: 'single',
-        required: true,
+        subtitle: 'Escolha uma ou mais bebidas (opcional)',
+        type: 'multi',
+        required: false,
         options: [
           { id: 'copo-nrg', label: 'Copo de NRG' },
           { id: 'copo-herbal', label: 'Copo de Herbal Concentrate' }
@@ -66,9 +66,9 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'base',
         title: 'Base do Seu Shake',
-        subtitle: 'Escolha a base',
-        type: 'single',
-        required: true,
+        subtitle: 'Escolha uma ou mais bases (opcional)',
+        type: 'multi',
+        required: false,
         options: [
           { id: 'nutrev', label: 'Nutrev (Lac Free)' },
           { id: 'leite', label: 'Leite' }
@@ -77,9 +77,9 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'textura',
         title: 'Textura',
-        subtitle: 'Escolha a textura',
-        type: 'single',
-        required: true,
+        subtitle: 'Escolha uma ou mais texturas (opcional)',
+        type: 'multi',
+        required: false,
         options: [
           { id: 'cremoso', label: 'Cremoso' },
           { id: 'sorvete', label: 'Sorvete' }
@@ -88,9 +88,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'cortesia',
         title: 'Sua Cortesia',
-        subtitle: 'Escolha até 3 cortesias da casa (opcional)',
+        subtitle: 'Cortesias da casa — escolha quantas quiser (opcional)',
         type: 'multi',
-        max: 3,
         required: false,
         options: [
           { id: 'amendoim', label: 'Amendoim' },
@@ -102,10 +101,9 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'sabores',
         title: 'Escolha o Sabor',
-        subtitle: 'Combine até 3 sabores',
+        subtitle: 'Combine quantos sabores quiser',
         type: 'multi',
-        max: 3,
-        required: true,
+        required: false,
         options: [
           { id: 'baunilha', label: 'Baunilha' },
           { id: 'morango', label: 'Morango' },

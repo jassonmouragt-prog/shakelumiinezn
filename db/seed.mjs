@@ -63,7 +63,7 @@ async function main() {
       id: 'menu-monte-seu-shake', slug: 'monte-seu-shake',
       name: 'Monte Seu Shake',
       subtitle: 'Proteico e saudável a partir de R$ 28,00 — monte o seu do seu jeito.',
-      description: 'O protagonista do Shake Lumiine ZN: você escolhe a bebida funcional, a base, a textura, a cortesia, até 3 sabores e os adicionais. Tudo montado na hora, do seu jeito.',
+      description: 'O protagonista do Shake Lumiine ZN: você escolhe as bebidas funcionais, as bases, as texturas, as cortesias, os sabores e os adicionais que quiser — tudo é acumulativo e montado na hora.',
       price: 28, promo_price: null, category: 'shakes',
       badge: 'MAIS VENDIDO', image: '/images/3d-product.png',
       gallery: ['/images/3d-product.png'],
@@ -71,7 +71,7 @@ async function main() {
       flavors: [],
       ingredients: ['Proteína Vegetal Premium', 'Base Leite ou Nutrev (Lac Free)', 'Sabores Naturais', 'Adicionais Funcionais'],
       nutritional_info: { calories: '180 kcal', protein: '22g', carbs: '14g', fat: '3.5g', fiber: '5g', sodium: '60mg' },
-      benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Impossível enjoar: 3 sabores combinados'],
+      benefits: ['Montado na hora, do seu jeito', 'Altíssima densidade proteica', 'Zero açúcar adicionado', 'Combine quantos sabores quiser'],
       addons: [
         { id: 'add-borda', label: 'Borda', price: 8 },
         { id: 'add-calda-quente', label: 'Calda Quente', price: 8 },
