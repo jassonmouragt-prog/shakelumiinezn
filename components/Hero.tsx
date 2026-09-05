@@ -212,17 +212,17 @@ export default function Hero() {
             {/* Lado direito: Produto Protagonista */}
             <Link
               href={`/produto/${heroProduct?.slug ?? 'produtos'}`}
-              className="relative w-36 sm:w-44 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
+              className="relative w-44 sm:w-52 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
               title="Montar e personalizar"
             >
-              <div className="absolute w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
+              <div className="absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
               <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] animate-float-slow">
                 <Image
                   src="/images/3d-product.png"
                   alt="Shake Lumiine ZN - Produto 3D"
                   fill
                   priority
-                  sizes="(min-width: 640px) 176px, 144px"
+                  sizes="(min-width: 640px) 208px, 176px"
                   className="object-contain"
                 />
               </div>
@@ -240,7 +240,7 @@ export default function Hero() {
             </Link>
             <Link
               href="/produtos"
-              className="w-full py-3.5 rounded-full bg-white border border-[#D9D9D9] text-[#1A1A1A] text-xs font-semibold"
+              className="w-full py-3.5 rounded-full bg-white border border-[#D9D9D9] text-[#1A1A1A] text-xs font-semibold flex items-center justify-center hover:border-[#B8943D]/50 transition-colors"
             >
               CONHECER PRODUTOS
             </Link>
