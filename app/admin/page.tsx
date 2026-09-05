@@ -73,6 +73,8 @@ export default function AdminPanelPage() {
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('admin@lumiine.com');
   const [loginPass, setLoginPass] = useState('admin123');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginBusy, setLoginBusy] = useState(false);
 
   // Navigation Tabs
   const [activeTab, setActiveTab] = useState<
@@ -160,9 +162,16 @@ const [newProdStock, setNewProdStock] = useState('60');
     setEditingProduct(null);
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginAdmin(loginEmail, loginPass);
+    setLoginError(null);
+    setLoginBusy(true);
+    try {
+      const error = await loginAdmin(loginEmail, loginPass);
+      if (error) setLoginError(error);
+    } finally {
+      setLoginBusy(false);
+    }
   };
 
   const handleCreateProductSubmit = (e: React.FormEvent) => {
@@ -370,7 +379,10 @@ const [newProdStock, setNewProdStock] = useState('60');
                   type="email"
                   required
                   value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    setLoginError(null);
+                  }}
                   className="w-full px-4 py-3 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                   placeholder="admin@lumiine.com"
                 />
@@ -384,11 +396,27 @@ const [newProdStock, setNewProdStock] = useState('60');
                   type="password"
                   required
                   value={loginPass}
-                  onChange={(e) => setLoginPass(e.target.value)}
+                  onChange={(e) => {
+                    setLoginPass(e.target.value);
+                    setLoginError(null);
+                  }}
                   className="w-full px-4 py-3 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all"
                   placeholder="••••••••"
                 />
               </div>
+
+              {loginError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-[11px] leading-snug animate-fade-in"
+                >
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-red-400" />
+                  <div>
+                    <span className="font-bold">Não foi possível acessar o painel:</span>{' '}
+                    {loginError}
+                  </div>
+                </div>
+              )}
 
               <div className="p-3.5 rounded-xl bg-[#18181C]/80 border border-[#D4AF37]/20 flex items-start gap-3">
                 <ShieldCheck className="w-4 h-4 text-[#D4AF37] flex-shrink-0 mt-0.5" />
@@ -401,10 +429,17 @@ const [newProdStock, setNewProdStock] = useState('60');
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-black text-xs font-bold tracking-wider hover:brightness-110 active:scale-[0.99] shadow-[0_4px_25px_rgba(201,162,39,0.35)] transition-all flex items-center justify-center gap-2"
+                disabled={loginBusy}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#C9A227] via-[#D4AF37] to-[#B8943D] text-black text-xs font-bold tracking-wider hover:brightness-110 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shadow-[0_4px_25px_rgba(201,162,39,0.35)] transition-all flex items-center justify-center gap-2"
               >
-                <Lock className="w-4 h-4" />
-                <span>AUTENTICAR E ACESSAR PAINEL</span>
+                {loginBusy ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+                <span>
+                  {loginBusy ? 'AUTENTICANDO...' : 'AUTENTICAR E ACESSAR PAINEL'}
+                </span>
               </button>
             </form>
 
