@@ -180,49 +180,47 @@ export default function Hero() {
 
         </div>
 
-        {/* MOBILE COMPOSITION: SECTION 14 (Dedicated ergonomics) */}
-        {/* Texto à esquerda, produto à direita */}
-        <div className="lg:hidden flex flex-col space-y-6 pt-2 pb-6">
+        {/* MOBILE COMPOSITION: PRODUTO PROTAGONISTA EM DESTAQUE */}
+        <div className="lg:hidden flex flex-col space-y-5 pt-2 pb-6 items-center">
 
-          {/* ROW: TEXTO (esquerda) + PRODUTO (direita) */}
-          <div className="flex flex-row items-center gap-2 sm:gap-3">
-            {/* Lado esquerdo: Label, Headline, Texto */}
-            <div className="flex-1 min-w-0 text-left space-y-3">
-              {/* 1. Label */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D4AF37]/35 shadow-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                <span className="text-[9.5px] tracking-[0.2em] font-semibold text-[#B8943D] uppercase">
-                  NATURAL • PREMIUM • SEU MOMENTO
-                </span>
-              </div>
-
-              {/* 2. Headline */}
-              <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-[#1A1A1A] leading-tight">
-                NATURAL PARA{' '}
-                <span className="font-serif italic font-normal text-[#C9A227]">
-                  você.
-                </span>
-              </h1>
-
-              <p className="text-xs sm:text-sm text-[#5A5A58] max-w-xs font-normal">
-                Mais sabor, praticidade e equilíbrio para acompanhar sua rotina diária.
-              </p>
+          {/* TEXTO */}
+          <div className="w-full text-left space-y-3">
+            {/* 1. Label */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-[#D4AF37]/35 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
+              <span className="text-[9.5px] tracking-[0.2em] font-semibold text-[#B8943D] uppercase">
+                NATURAL • PREMIUM • SEU MOMENTO
+              </span>
             </div>
 
-            {/* Lado direito: Produto Protagonista */}
+            {/* 2. Headline */}
+            <h1 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-[#1A1A1A] leading-tight">
+              NATURAL PARA{' '}
+              <span className="font-serif italic font-normal text-[#C9A227]">
+                você.
+              </span>
+            </h1>
+
+            <p className="text-xs sm:text-sm text-[#5A5A58] max-w-xs font-normal">
+              Mais sabor, praticidade e equilíbrio para acompanhar sua rotina diária.
+            </p>
+          </div>
+
+          {/* Produto Protagonista — preenche o espaço no mobile */}
+          <div className="relative -mx-6 w-[calc(100%+48px)] sm:mx-0 sm:w-full flex items-center justify-center">
+            <div className="absolute w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
             <Link
               href={`/produto/${heroProduct?.slug ?? 'produtos'}`}
-              className="relative w-52 sm:w-64 flex-shrink-0 aspect-[2/3] flex items-center justify-center cursor-pointer"
+              className="relative w-full max-w-[460px] aspect-[3/4] flex items-center justify-center cursor-pointer"
               title="Montar e personalizar"
             >
-              <div className="absolute w-44 h-44 sm:w-56 sm:h-56 rounded-full bg-[#F5E7B2]/35 blur-xl pointer-events-none" />
-              <div className="relative w-full h-full drop-shadow-[0_15px_25px_rgba(0,0,0,0.08)] animate-float-slow">
+              <div className="relative w-full h-full drop-shadow-[0_20px_35px_rgba(0,0,0,0.1)] animate-float-slow">
                 <Image
                   src="/images/3d-product.png"
                   alt="Shake Lumiine ZN - Produto 3D"
                   fill
                   priority
-                  sizes="(min-width: 640px) 256px, 208px"
+                  sizes="(min-width: 640px) 460px, 92vw"
                   className="object-contain"
                 />
               </div>
