@@ -1,35 +1,33 @@
 # CHECKPOINT - Retomar após reiniciar
 
-Data: 2026-09-04
+Data: 2026-09-05
 Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon (Postgres)
 
 ## Estado atual
-- Deploy de produção ativo: https://shakelumiinezn.vercel.app
-- Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master)
+- Deploy de produção ativo: https://shakelumiinezn.com.br (domínio próprio, concluído - 2026-09-05) e https://shakelumiinezn.vercel.app.
+- Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master).
 - Vercel conectado ao GitHub (deploy automático em push na master via `vercel git connect`).
 - **Persistência no Neon (Postgres serverless)** — projeto Neon `sparkling-cherry-15094366`.
-- **Área do Revendedor exclusiva (`/revendedor`)**:
-  - Login individual para revendedores via `/api/resellers/login` e `/api/resellers/me`.
-  - Tabela `users` vinculada a `reseller_id` (`db/schema.sql`, `lib/resellers.ts`).
-  - Painel do revendedor com dashboard de comissões, link de indicação, extrato de pedidos indicados e status de repasse.
-  - Cadastro de acesso para revendedores direto pelo painel admin (gera usuário e senha).
-- **Redesenho Executivo do Painel Administrativo (`/admin`)**:
-  - Identidade visual Obsidian & Gold (`#09090B`, `#0E0E12`, `#18181C` com acentos `#D4AF37` / `#E8C868`).
-  - Navegação desktop fixa por categorias: Visão Geral (Dashboard), Operações (Pedidos, Catálogo, Estoque) e Finanças & Rede (Despesas & Margens, Revendedores & Comissões).
-  - Drawer mobile completo com backdrop blur.
-  - Topbar contextual com atalhos de ação rápida específicos por aba ativa.
-  - Dashboard Executivo com 4 KPI cards (Faturamento Bruto, Despesas Operacionais, Comissões a Repassar, Lucro Líquido Real com Margem Líquida %), feed de pedidos em tempo real e resumos operacionais.
-  - Gestão de Pedidos com filtros rápidos por status, busca em tempo real e atualização de status em 1 clique.
-  - Catálogo de Produtos com controle de visibilidade na vitrine, badges de categoria e modal de criação/edição com upload de foto.
-  - Controle de Estoque com indicadores visuais de estoque baixo, modal de movimentação rápida (entrada/saída) e histórico auditável.
-  - Painel Financeiro & DRE com gráficos de margem, listagem de despesas operacionais por categoria e lançamento rápido.
-  - Gestão de Revendedores com aprovação de cadastros, controle de comissões e criação de credenciais de acesso.
+- **Produtos no site sincronizados e com carregamento resiliente**:
+  - `INITIAL_PRODUCTS` em `lib/mock-data.ts` contém os 14 produtos do cardápio real (com imagens, badges e categorias), servindo como fallback imediato.
+  - `AppContext` hidrata do `/api/products` mesclando dados do banco com o fallback local (imagem, badge e galeria preservados quando vazios no banco). Estado `isLoading` controla o skeleton na listagem.
+  - Categorias reais: shakes, bebidas, salgados, novidades, mais-vendidos (combos e kits removidos).
+- **Área do Revendedor FOI REMOVIDA** em `fa5bc81` (2026-09-05): páginas `/revenda` e `/revendedor`, APIs `api/resellers/*` e `api/commissions`, gestão de revendedores no admin — tudo removido. Diretórios vazios `app/(site)/revenda`, `app/(site)/revendedor`, `app/api/resellers`, `app/api/commissions` podem ser deletados.
 - **Login real do admin**: tabela `users`, senha com hash (scrypt), sessão via cookie HttpOnly `lumiine_session` (HMAC-SHA256). Admin seed: `admin@lumiine.com` / `admin123`.
-- API routes em `app/api/`: auth (login/logout/me), resellers (login/me/crud), products (+[id]), orders (+[id]), loyalty, commissions, expenses (+[id]), stock.
+- API routes atuais em `app/api/`: auth (login/logout/me), products (+[id]), orders (+[id]), loyalty, expenses (+[id]), stock.
+- Redesenho Executivo do Painel Administrativo (`/admin`): identidade Obsidian & Gold (`#09090B`, `#0E0E12`, `#18181C` com acentos `#D4AF37` / `#E8C868`), sidebar por categorias (Visão Geral, Operações, Finanças), drawer mobile, dashboard com KPIs, gestão de pedidos com filtros, catálogo com controle de visibilidade e foto, controle de estoque, painel financeiro & DRE (despesas).
 - Favicon e título da aba customizados com a identidade da marca.
-- Hero com animação 3D do produto (transparência nativa WebM VP9 no Chrome/Edge e fallback MP4 via Canvas nos demais).
-- Build validado com TypeScript (23 rotas estáticas e dinâmicas compilando 100% sem erros).
-- Último commit: `d09b753` em `origin/master`.
+- Hero com animação 3D do produto (WebM VP9 no Chrome/Edge com transparência, fallback MP4 via Canvas nos demais).
+- Build validado com TypeScript: 17 rotas compilando sem erros. **Atenção:** se surgirem erros TS falsos em `.next/dev/types/validator.ts`, limpar a pasta `.next` antes de buildar.
+- Último commit: `5019255` em `origin/master` (branch já empurrada, deploy Vercel ativo). Porém, o redirect www→apex do `next.config.ts` e este arquivo estão **pendentes de commit/push**.
+
+## Domínio personalizado (CONCLUÍDO - 2026-09-05)
+- Domínio: **shakelumiinezn.com.br** (Registro.br), delegado via nameservers Vercel (`ns1.vercel-dns.com` / `ns2.vercel-dns.com`) — Opção B (delegação total).
+- `vercel domains inspect shakelumiinezn.com.br` confirmou nameservers atuais corretos e sem WARNING.
+- SSL emitido manualmente (a Vercel não emitiu sozinha): `vercel certs issue shakelumiinezn.com.br` e `vercel certs issue www.shakelumiinezn.com.br`.
+- Apex respondendo HTTPS 200 em https://shakelumiinezn.com.br. `www` também 200 (sem redirect automático; a Vercel NÃO gerencia redirect www sozinha, a despeito do esperado).
+- **PENDENTE:** redirect www→apex adicionado em `next.config.ts` (via `has: { type: "host" }` + `permanent: true`), validado no build local. Falta apenas commit + push para o deploy automático aplicar.
+- Conta Vercel (scope `jason-3c4d`, usuário `jassonmouragt-9214`). Outros domínios: `sualojinhamakeup.com.br` (nameservers Vercel, funcionando).
 
 ## Fontes de trabalho locais (NÃO versionadas)
 - "hype drink - product animation 3d.mov" (sem alpha)
