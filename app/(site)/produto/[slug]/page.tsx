@@ -25,6 +25,23 @@ export default function SingleProductPage() {
   const [selections, setSelections] = useState<Record<string, string[]>>({});
   const [buildError, setBuildError] = useState<string | null>(null);
   const [prevSlug, setPrevSlug] = useState(slug);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [review, setReview] = useState({ name: '', comment: '' });
+  const [reviewsList, setReviewsList] = useState<{ name: string; comment: string; date: string }[]>([]);
+
+  const submitReview = () => {
+    if (!review.name.trim() || !review.comment.trim()) return;
+    setReviewsList((prev) => [
+      {
+        name: review.name.trim(),
+        comment: review.comment.trim(),
+        date: 'Agora mesmo'
+      },
+      ...prev
+    ]);
+    setReview({ name: '', comment: '' });
+    setShowReviewForm(false);
+  };
 
   if (prevSlug !== slug) {
     setPrevSlug(slug);
@@ -407,16 +424,13 @@ export default function SingleProductPage() {
 
         </div>
 
-        {/* SEÇÕES DETALHADAS (Ingredientes, Nutricional, Benefícios, Avaliações) */}
+        {/* SEÇÕES DETALHADAS (Descrição, Avaliações) */}
         <div className="mt-14 bg-white rounded-[32px] border border-[#E8E8E4] p-6 sm:p-10 shadow-xs">
           {/* Tabs */}
           <div className="flex items-center gap-4 border-b border-[#F0F0EC] overflow-x-auto pb-3">
             {[
-              { key: 'descricao', label: 'Descrição Completa' },
-              { key: 'ingredientes', label: 'Ingredientes Puros' },
-              { key: 'nutricional', label: 'Tabela Nutricional' },
-              { key: 'beneficios', label: 'Benefícios Clínicos' },
-              { key: 'avaliacoes', label: `Avaliações (${product.reviewsCount})` }
+              { key: 'descricao', label: 'Descrição' },
+              { key: 'avaliacoes', label: 'Avaliações' }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -437,97 +451,57 @@ export default function SingleProductPage() {
             {activeTab === 'descricao' && (
               <div className="max-w-3xl space-y-4 text-xs sm:text-sm text-[#5A5A58] leading-relaxed">
                 <p>{product.description}</p>
-                <p>
-                  Elaborado com tecnologia de micronização a frio para preservar a integridade estrutural das proteínas e dos fitoquímicos naturais. Dissolução instantânea tanto em água quanto em leites vegetais, sem necessidade de liquidificador.
-                </p>
-              </div>
-            )}
-
-            {activeTab === 'ingredientes' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
-                {product.ingredients.map((ing, i) => (
-                  <div key={i} className="flex items-center gap-2.5 p-3 rounded-2xl bg-[#FAFAF8] border border-[#EBEBEA] text-xs text-[#1A1A1A] font-medium">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                    <span>{ing}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'nutricional' && (
-              <div className="max-w-xl bg-[#FAFAF8] rounded-2xl border border-[#E8E8E4] p-5">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A1A1A] mb-3">
-                  Informação Nutricional (Porção de 30g)
-                </h4>
-                <div className="divide-y divide-[#EBEBEA] text-xs text-[#3A3A38]">
-                  <div className="py-2 flex justify-between">
-                    <span>Valor Energético</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.calories}</strong>
-                  </div>
-                  <div className="py-2 flex justify-between">
-                    <span>Proteínas</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.protein}</strong>
-                  </div>
-                  <div className="py-2 flex justify-between">
-                    <span>Carboidratos</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.carbs}</strong>
-                  </div>
-                  <div className="py-2 flex justify-between">
-                    <span>Gorduras Totais</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.fat}</strong>
-                  </div>
-                  <div className="py-2 flex justify-between">
-                    <span>Fibras Alimentares</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.fiber}</strong>
-                  </div>
-                  <div className="py-2 flex justify-between">
-                    <span>Sódio</span>
-                    <strong className="text-[#1A1A1A]">{product.nutritionalInfo.sodium}</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'beneficios' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
-                {product.benefits.map((ben, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-1">
-                    <span className="text-[10px] font-bold text-[#B8943D] uppercase tracking-wider">BENEFÍCIO #{i + 1}</span>
-                    <p className="text-xs font-semibold text-[#1A1A1A]">{ben}</p>
-                  </div>
-                ))}
               </div>
             )}
 
             {activeTab === 'avaliacoes' && (
-              <div className="space-y-4 max-w-3xl">
-                {[
-                  {
-                    name: 'Mariana Duarte',
-                    rating: 5,
-                    date: 'Há 3 dias',
-                    comment: 'Surpreendente! Não tem aquele gosto de areia comum de proteínas vegetais. O aroma de fava de baunilha é muito sofisticado e dá uma saciedade ótima pela manhã.'
-                  },
-                  {
-                    name: 'Dra. Gabriela Vasconcelos',
-                    rating: 5,
-                    date: 'Há 1 semana',
-                    comment: 'Prescrevo para meus pacientes em busca de alimentação limpa. O perfil de aminoácidos é excelente e a digestibilidade é nota 10.'
-                  }
-                ].map((rev, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#1A1A1A]">{rev.name}</span>
-                      <span className="text-[11px] text-[#8E8E8A]">{rev.date}</span>
-                    </div>
-                    <div className="flex text-[#D4AF37]">
-                      {[...Array(rev.rating)].map((_, idx) => (
-                        <Star key={idx} className="w-3 h-3 fill-[#D4AF37]" />
-                      ))}
-                    </div>
-                    <p className="text-xs text-[#5A5A58]">{rev.comment}</p>
+              <div className="space-y-6 max-w-3xl">
+                <button
+                  onClick={() => setShowReviewForm(!showReviewForm)}
+                  className="px-5 py-2.5 rounded-full bg-[#C9A227] text-white text-xs font-bold tracking-wider hover:brightness-105 transition-all shadow-xs"
+                >
+                  DEIXE SUA AVALIAÇÃO DO PRODUTO
+                </button>
+
+                {showReviewForm && (
+                  <div className="p-5 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Seu nome"
+                      value={review.name}
+                      onChange={(e) => setReview({ ...review, name: e.target.value })}
+                      className="w-full p-3 rounded-xl border border-[#EBEBEA] text-xs bg-white focus:outline-none focus:border-[#C9A227]"
+                    />
+                    <textarea
+                      placeholder="Escreva sua avaliação..."
+                      value={review.comment}
+                      onChange={(e) => setReview({ ...review, comment: e.target.value })}
+                      className="w-full p-3 rounded-xl border border-[#EBEBEA] text-xs bg-white focus:outline-none focus:border-[#C9A227] h-24 resize-none"
+                    />
+                    <button
+                      onClick={submitReview}
+                      className="px-5 py-2.5 rounded-full bg-[#1A1A1A] text-white text-xs font-bold tracking-wider hover:brightness-110 transition-all"
+                    >
+                      ENVIAR AVALIAÇÃO
+                    </button>
                   </div>
-                ))}
+                )}
+
+                {reviewsList.length === 0 ? (
+                  <p className="text-xs text-[#8E8E8A] italic">Nenhuma avaliação registrada ainda.</p>
+                ) : (
+                  <div className="space-y-3 pt-2">
+                    {reviewsList.map((rev, i) => (
+                      <div key={i} className="p-4 rounded-2xl bg-[#FAFAF8] border border-[#E8E8E4] space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#1A1A1A]">{rev.name}</span>
+                          <span className="text-[10px] text-[#8E8E8A]">{rev.date}</span>
+                        </div>
+                        <p className="text-xs text-[#5A5A58]">{rev.comment}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
