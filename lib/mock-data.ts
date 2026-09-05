@@ -115,8 +115,9 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'cortesia',
         title: 'Sua Cortesia',
-        subtitle: 'Cortesia da casa (opcional)',
-        type: 'single',
+        subtitle: 'Escolha até 3 cortesias da casa (opcional)',
+        type: 'multi',
+        max: 3,
         required: false,
         options: [
           { id: 'amendoim', label: 'Amendoim' },
