@@ -30,6 +30,21 @@ export default function FeaturedProducts() {
     return prod.category === activeCategory;
   });
 
+  const isMonteSeuShake = (p: Product) =>
+    p.slug === 'monte-seu-shake' || p.id === 'menu-monte-seu-shake' || (p.name || '').toLowerCase().includes('monte seu shake');
+
+  const monteSeuShake = filteredProducts.find(isMonteSeuShake);
+  const otherProducts = filteredProducts.filter((p) => !isMonteSeuShake(p));
+
+  // Ordena os demais produtos por ordem de preço crescente
+  otherProducts.sort((a, b) => {
+    const priceA = a.promoPrice || a.price;
+    const priceB = b.promoPrice || b.price;
+    return priceA - priceB;
+  });
+
+  const displayedProducts = monteSeuShake ? [monteSeuShake, ...otherProducts] : otherProducts;
+
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -77,7 +92,7 @@ export default function FeaturedProducts() {
 
       {/* PRODUCTS GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7">
-        {filteredProducts.map((product) => {
+        {displayedProducts.map((product) => {
           const isFav = !!favorites[product.id];
           const hasPromo = !!product.promoPrice && product.promoPrice < product.price;
 

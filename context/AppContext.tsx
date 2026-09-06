@@ -187,9 +187,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               customizationSteps: p.customizationSteps && p.customizationSteps.length > 0 ? p.customizationSteps : (fallback?.customizationSteps ?? [])
             };
           });
-          // Garante que o produto principal "Monte Seu Shake" sempre exista
+          // Garante que o produto principal "Monte Seu Shake" sempre exista em primeiro lugar
           const builder = INITIAL_PRODUCTS.find((init) => init.slug === 'monte-seu-shake');
-          const final = builder && !merged.some((m) => m.slug === builder.slug) ? [builder, ...merged] : merged;
+          const rawList = builder && !merged.some((m) => m.slug === builder.slug) ? [builder, ...merged] : merged;
+          
+          const isMonteSeuShake = (p: Product) =>
+            p.slug === 'monte-seu-shake' || p.id === 'menu-monte-seu-shake' || (p.name || '').toLowerCase().includes('monte seu shake');
+
+          const monte = rawList.find(isMonteSeuShake);
+          const others = rawList.filter((p) => !isMonteSeuShake(p));
+          others.sort((a, b) => {
+            const priceA = a.promoPrice || a.price;
+            const priceB = b.promoPrice || b.price;
+            return priceA - priceB;
+          });
+
+          const final = monte ? [monte, ...others] : others;
           setProducts(final);
         }
       } catch (e) {

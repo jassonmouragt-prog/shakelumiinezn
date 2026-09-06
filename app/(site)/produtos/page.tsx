@@ -12,7 +12,7 @@ export default function MarketplacePage() {
   const { products, addToCart, isLoading } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('todos');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
+  const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'rating' | 'featured'>('price-asc');
   const [favorites, setFavorites] = useState<Record<string, boolean>>({});
 
   const categories: { key: ProductCategory; label: string }[] = [
@@ -43,16 +43,25 @@ export default function MarketplacePage() {
     return matchesCategory && matchesSearch;
   });
 
-  // Sorting
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+  const isMonteSeuShake = (p: Product) =>
+    p.slug === 'monte-seu-shake' || p.id === 'menu-monte-seu-shake' || (p.name || '').toLowerCase().includes('monte seu shake');
+
+  const monteSeuShake = filteredProducts.find(isMonteSeuShake);
+  const otherProducts = filteredProducts.filter((p) => !isMonteSeuShake(p));
+
+  // Sorting: os demais produtos seguem a ordem selecionada (padrão: ordem de preço crescente)
+  otherProducts.sort((a, b) => {
     const priceA = a.promoPrice || a.price;
     const priceB = b.promoPrice || b.price;
 
-    if (sortBy === 'price-asc') return priceA - priceB;
     if (sortBy === 'price-desc') return priceB - priceA;
     if (sortBy === 'rating') return b.rating - a.rating;
-    return (b.reviewsCount || 0) - (a.reviewsCount || 0);
+    if (sortBy === 'featured') return (b.reviewsCount || 0) - (a.reviewsCount || 0);
+    return priceA - priceB;
   });
+
+  // O "Monte Seu Shake" é sempre o primeiro produto da lista
+  const sortedProducts = monteSeuShake ? [monteSeuShake, ...otherProducts] : otherProducts;
 
   const toggleFavorite = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -107,10 +116,10 @@ export default function MarketplacePage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-4 py-2.5 rounded-full bg-[#FAFAF8] border border-[#E2E2DF] text-xs font-semibold text-[#1A1A1A] focus:outline-none focus:border-[#D4AF37] cursor-pointer"
             >
-              <option value="featured">Mais Vendidos</option>
-              <option value="rating">Mais Bem Avaliados</option>
               <option value="price-asc">Menor Preço</option>
               <option value="price-desc">Maior Preço</option>
+              <option value="rating">Mais Bem Avaliados</option>
+              <option value="featured">Mais Vendidos</option>
             </select>
           </div>
 
