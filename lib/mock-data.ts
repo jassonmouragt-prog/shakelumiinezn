@@ -336,17 +336,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     addons: [],
     customizationSteps: [
       {
-        id: 'bebida',
-        title: 'Bebidas Funcionais',
-        subtitle: 'Escolha uma ou mais bebidas (opcional)',
-        type: 'multi',
-        required: false,
-        options: [
-          { id: 'copo-nrg', label: 'Copo de NRG', price: 2 },
-          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate', price: 2 }
-        ]
-      },
-      {
         id: 'parte-baixo',
         title: 'PARTE DE BAIXO',
         subtitle: 'Escolha 1 sabor:',
