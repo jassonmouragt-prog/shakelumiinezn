@@ -318,8 +318,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'menu-hype-drink',
     slug: 'hype-drink',
     name: 'Hype Drink',
-    subtitle: 'Bebida funcional energética e refrescante.',
-    description: 'Hype Drink — bebida funcional com efeito termogênico e foco limpo para seu dia render com máxima energia.',
+    subtitle: 'Bebida funcional energética e refrescante — monte o seu.',
+    description: 'Hype Drink — bebida funcional com efeito termogênico e foco limpo. Monte seu Hype escolhendo 1 sabor da parte de baixo + 1 sabor da parte de cima.',
     price: 28,
     category: 'bebidas',
     badge: 'MAIS VENDIDO',
@@ -329,11 +329,55 @@ export const INITIAL_PRODUCTS: Product[] = [
     reviewsCount: 215,
     weight: '400ml',
     servings: 1,
-    flavors: ['Frutas Tropicais', 'Citrus Power'],
-    ingredients: ['Guaraná do Amazonas', 'Extrato de Chá Verde', 'Eletrólitos', 'Taurina'],
+    flavors: [],
+    ingredients: ['Guaraná do Amazonas', 'Extrato de Chá Verde', 'Eletrólitos', 'Taurina', 'Sabores Naturais'],
     nutritionalInfo: { calories: '45 kcal', protein: '2g', carbs: '8g', fat: '0g', fiber: '2g', sodium: '35mg' },
-    benefits: ['Foco mental nítido', 'Termogênese suave', 'Zero açúcar'],
+    benefits: ['Foco mental nítido', 'Termogênese suave', 'Zero açúcar', 'Monte do seu jeito'],
     addons: [],
+    customizationSteps: [
+      {
+        id: 'bebida',
+        title: 'Bebidas Funcionais',
+        subtitle: 'Escolha uma ou mais bebidas (opcional)',
+        type: 'multi',
+        required: false,
+        options: [
+          { id: 'copo-nrg', label: 'Copo de NRG', price: 2 },
+          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate', price: 2 }
+        ]
+      },
+      {
+        id: 'parte-baixo',
+        title: 'PARTE DE BAIXO',
+        subtitle: 'Escolha 1 sabor:',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'amora', label: 'Amora' },
+          { id: 'abacaxi-baixo', label: 'Abacaxi' },
+          { id: 'limao-siciliano', label: 'Limão Siciliano' }
+        ]
+      },
+      {
+        id: 'parte-cima',
+        title: 'PARTE DE CIMA',
+        subtitle: 'Escolha 1 sabor:',
+        type: 'single',
+        required: true,
+        options: [
+          { id: 'laranja', label: 'Laranja' },
+          { id: 'uva', label: 'Uva' },
+          { id: 'morango', label: 'Morango' },
+          { id: 'abacaxi-cima', label: 'Abacaxi' },
+          { id: 'limao', label: 'Limão' },
+          { id: 'manga', label: 'Manga' },
+          { id: 'guarana', label: 'Guaraná' },
+          { id: 'tangerina', label: 'Tangerina' },
+          { id: 'caja', label: 'Cajá' },
+          { id: 'maracuja', label: 'Maracujá' }
+        ]
+      }
+    ],
     stock: 80,
     isFeatured: true,
     showInShowcase: true
