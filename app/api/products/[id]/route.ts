@@ -40,7 +40,7 @@ function cleanBody(body: Record<string, unknown>): Partial<Product> | null {
     out.category = v;
   }
   if (body.badge !== undefined) out.badge = (body.badge === null ? null : str(body.badge, 30)) as Product['badge'] | null;
-  if (body.image !== undefined) out.image = str(body.image, 500) ?? '';
+  if (body.image !== undefined) out.image = str(body.image, 100000) ?? '';
   if (body.rating !== undefined) {
     const v = num(body.rating, 0, 5);
     if (v === null) return null;
