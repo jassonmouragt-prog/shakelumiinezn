@@ -55,12 +55,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'bebida',
         title: 'Bebidas Funcionais',
-        subtitle: 'Escolha uma ou mais bebidas (opcional)',
+        subtitle: 'Escolha uma ou mais bebidas (opcional) — acréscimo de R$ 2,00 cada',
         type: 'multi',
         required: false,
         options: [
-          { id: 'copo-nrg', label: 'Copo de NRG' },
-          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate' }
+          { id: 'copo-nrg', label: 'Copo de NRG', price: 2 },
+          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate', price: 2 }
         ]
       },
       {
