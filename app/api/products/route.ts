@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const category = oneOf(body?.category, VALID_CATEGORIES) ?? 'shakes';
   const badge =
     body?.badge == null ? null : str(body?.badge, 30);
-  const image = str(body?.image, 100000) ?? '';
+  const image = str(body?.image, 10_000_000) ?? '';
   const price = num(body?.price, 0, 1_000_000);
   const promoPrice =
     body?.promoPrice == null ? null : num(body?.promoPrice, 0, 1_000_000);
