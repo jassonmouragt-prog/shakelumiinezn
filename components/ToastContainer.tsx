@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '@/context/AppContext';
-import { CheckCircle2, Info, Sparkles, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, Sparkles, X } from 'lucide-react';
 
 export default function ToastContainer() {
   const { toasts, dismissToast } = useApp();
@@ -14,10 +14,20 @@ export default function ToastContainer() {
       {toasts.map((t) => (
         <div
           key={t.id}
-          className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl border border-[#D4AF37]/50 p-4 shadow-[0_15px_30px_rgba(0,0,0,0.08)] flex items-start gap-3 transition-all animate-slide-left"
+          className={`pointer-events-auto bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-[0_15px_30px_rgba(0,0,0,0.08)] flex items-start gap-3 transition-all animate-slide-left ${
+            t.type === 'error' ? 'border border-red-400/60' : 'border border-[#D4AF37]/50'
+          }`}
         >
-          <div className="w-7 h-7 rounded-full bg-[#FAFAF8] border border-[#D4AF37]/40 flex items-center justify-center flex-shrink-0 text-[#C9A227]">
-            {t.type === 'gold' ? (
+          <div
+            className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 ${
+              t.type === 'error'
+                ? 'bg-red-50 border-red-400/40 text-red-500'
+                : 'bg-[#FAFAF8] border-[#D4AF37]/40 text-[#C9A227]'
+            }`}
+          >
+            {t.type === 'error' ? (
+              <AlertCircle className="w-3.5 h-3.5" />
+            ) : t.type === 'gold' ? (
               <Sparkles className="w-3.5 h-3.5" />
             ) : t.type === 'info' ? (
               <Info className="w-3.5 h-3.5" />

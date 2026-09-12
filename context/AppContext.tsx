@@ -22,7 +22,7 @@ interface Toast {
   id: string;
   title: string;
   message: string;
-  type?: 'success' | 'info' | 'gold';
+  type?: 'success' | 'info' | 'gold' | 'error';
 }
 
 interface AppContextType {
@@ -501,28 +501,50 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Products CRUD & Showcase Control
   const addProduct = (newProd: Omit<Product, 'id' | 'slug'>) => {
     const slug = newProd.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const tempId = `prod-${Date.now()}`;
     const created: Product = {
       ...newProd,
-      id: `prod-${Date.now()}`,
+      id: tempId,
       slug,
       showInShowcase: newProd.showInShowcase !== undefined ? newProd.showInShowcase : true
     };
-    const updated = [created, ...products];
-    setProducts(updated);
-    api('/api/products', { method: 'POST', body: JSON.stringify(newProd) }).catch(() => {});
-    showToast('Produto Cadastrado', `${newProd.name} foi adicionado ao catálogo.`, 'gold');
+    setProducts((prev) => [created, ...prev]);
+    api<{ id?: string; slug?: string }>('/api/products', { method: 'POST', body: JSON.stringify(newProd) })
+      .then((res) => {
+        // Usa o id/slug reais retornados pelo servidor para que edição/exclusão funcionem
+        if (res?.id && res.id !== tempId) {
+          setProducts((prev) =>
+            prev.map((p) => (p.id === tempId ? { ...p, id: res.id as string, slug: res.slug ?? p.slug } : p))
+          );
+        }
+        showToast('Produto Cadastrado', `${newProd.name} foi adicionado ao catálogo.`, 'gold');
+      })
+      .catch((e) => {
+        setProducts((prev) => prev.filter((p) => p.id !== tempId));
+        showToast('Produto não salvo', e?.message || 'Erro ao salvar o produto no banco. Verifique os dados e tente novamente.', 'error');
+      });
   };
 
   const updateProduct = (id: string, updates: Partial<Product>) => {
     setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
-    api(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify(updates) }).catch(() => {});
-    showToast('Produto Atualizado', 'Alterações salvas com sucesso.', 'info');
+    api(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify(updates) })
+      .then(() => {
+        showToast('Produto Atualizado', 'Alterações salvas com sucesso.', 'info');
+      })
+      .catch((e) => {
+        showToast('Não foi possível salvar', e?.message || 'Erro ao salvar as alterações no banco.', 'error');
+      });
   };
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    api(`/api/products/${id}`, { method: 'DELETE' }).catch(() => {});
-    showToast('Produto Removido', 'Item excluído do catálogo.', 'info');
+    api(`/api/products/${id}`, { method: 'DELETE' })
+      .then(() => {
+        showToast('Produto Removido', 'Item excluído do catálogo.', 'info');
+      })
+      .catch((e) => {
+        showToast('Não foi possível excluir', e?.message || 'Erro ao excluir o produto.', 'error');
+      });
   };
 
   const toggleProductShowcase = (id: string) => {
@@ -540,7 +562,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             api(`/api/products/${id}`, {
               method: 'PATCH',
               body: JSON.stringify({ showInShowcase: newState })
-            }).catch(() => {});
+            }).catch((e) => {
+              showToast('Não foi possível salvar', e?.message || 'Erro ao alterar a visibilidade do produto.', 'error');
+            });
           }, 0);
           return { ...p, showInShowcase: newState };
         }

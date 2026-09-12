@@ -109,7 +109,8 @@ export default function AdminPanelPage() {
   const [newProdName, setNewProdName] = useState('');
   const [newProdCategory, setNewProdCategory] = useState<'shakes' | 'bebidas' | 'salgados'>('shakes');
   const [newProdPrice, setNewProdPrice] = useState('69.90');
-const [newProdStock, setNewProdStock] = useState('60');
+  const [newProdStock, setNewProdStock] = useState('60');
+  const [newProdWeight, setNewProdWeight] = useState('');
   const [newProdImage, setNewProdImage] = useState('');
   const [newProdShowcase, setNewProdShowcase] = useState(true);
   const [newProdDescription, setNewProdDescription] = useState(
@@ -123,6 +124,7 @@ const [newProdStock, setNewProdStock] = useState('60');
   const [editPrice, setEditPrice] = useState('0.00');
   const [editPromoPrice, setEditPromoPrice] = useState('');
   const [editStock, setEditStock] = useState('0');
+  const [editWeight, setEditWeight] = useState('');
   const [editImage, setEditImage] = useState('');
   const [editShowcase, setEditShowcase] = useState(true);
   const [editSubtitle, setEditSubtitle] = useState('');
@@ -151,6 +153,7 @@ const [newProdStock, setNewProdStock] = useState('60');
     setEditPrice(String(prod.price));
     setEditPromoPrice(prod.promoPrice != null ? String(prod.promoPrice) : '');
     setEditStock(String(prod.stock));
+    setEditWeight(prod.weight || '');
     setEditImage(prod.image || '');
     setEditShowcase(prod.showInShowcase !== false);
     setEditSubtitle(prod.subtitle || '');
@@ -167,6 +170,7 @@ const [newProdStock, setNewProdStock] = useState('60');
       price: parseFloat(editPrice) || 0,
       promoPrice: editPromoPrice ? parseFloat(editPromoPrice) : undefined,
       stock: parseInt(editStock, 10) || 0,
+      weight: editWeight.trim(),
       image: editImage,
       showInShowcase: editShowcase,
       subtitle: editSubtitle,
@@ -205,7 +209,7 @@ const [newProdStock, setNewProdStock] = useState('60');
       gallery: [newProdImage],
       rating: 5.0,
       reviewsCount: 1,
-      weight: '600g',
+      weight: newProdWeight.trim(),
       servings: 20,
       flavors: ['Original Premium'],
       ingredients: ['Proteína Isolada Pura', 'Extratos Botânicos Naturais'],
@@ -224,6 +228,7 @@ const [newProdStock, setNewProdStock] = useState('60');
 
     setShowAddProductModal(false);
     setNewProdName('');
+    setNewProdWeight('');
     setNewProdImage('');
   };
 
@@ -1091,7 +1096,11 @@ const [newProdStock, setNewProdStock] = useState('60');
                             </div>
                             <div className="min-w-0">
                               <strong className="text-white block truncate">{prod.name}</strong>
-                              <span className="text-[10px] text-zinc-500">{prod.weight}</span>
+                              {prod.weight ? (
+                                <span className="text-[10px] text-zinc-500">{prod.weight}</span>
+                              ) : (
+                                <span className="text-[10px] text-zinc-600">Sem peso/litragem definido</span>
+                              )}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 uppercase font-semibold text-zinc-400">{prod.category}</td>
@@ -1352,6 +1361,16 @@ const [newProdStock, setNewProdStock] = useState('60');
                     className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white"
                   />
                 </div>
+                <div>
+                  <label className="block font-semibold text-zinc-300 mb-1">Peso / Litragem</label>
+                  <input
+                    type="text"
+                    placeholder="Opcional — Ex: 600g, 1L, 300ml…"
+                    value={newProdWeight}
+                    onChange={(e) => setNewProdWeight(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1500,6 +1519,17 @@ const [newProdStock, setNewProdStock] = useState('60');
                     <option value="salgados">Salgados</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-zinc-300 mb-1">Peso / Litragem</label>
+                <input
+                  type="text"
+                  placeholder="Opcional — Ex: 600g, 1L, 300ml…"
+                  value={editWeight}
+                  onChange={(e) => setEditWeight(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#18181C] border border-white/10 text-xs text-white focus:outline-none focus:border-[#D4AF37]"
+                />
               </div>
 
               <div>
