@@ -1,36 +1,44 @@
 # CHECKPOINT - Retomar após reiniciar
 
-Data: 2026-09-05
+Data: 2026-09-12
 Objetivo: Site Shakelumiinezn ativo na Vercel + repositório GitHub + banco Neon (Postgres)
 
 ## Estado atual
-- Deploy de produção ativo: https://shakelumiinezn.com.br (domínio próprio, concluído - 2026-09-05) e https://shakelumiinezn.vercel.app.
-- Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master).
-- Vercel conectado ao GitHub (deploy automático em push na master via `vercel git connect`).
-- **Persistência no Neon (Postgres serverless)** — projeto Neon `sparkling-cherry-15094366`.
-- **Produtos no site sincronizados e com carregamento resiliente**:
-  - `INITIAL_PRODUCTS` em `lib/mock-data.ts` contém os 14 produtos do cardápio real (com imagens, badges e categorias), servindo como fallback imediato.
-  - `AppContext` hidrata do `/api/products` mesclando dados do banco com o fallback local (imagem, badge e galeria preservados quando vazios no banco). Estado `isLoading` controla o skeleton na listagem.
-  - Categorias reais: shakes, bebidas, salgados, novidades, mais-vendidos (combos e kits removidos).
-- **Área do Revendedor FOI REMOVIDA** em `fa5bc81` (2026-09-05): páginas `/revenda` e `/revendedor`, APIs `api/resellers/*` e `api/commissions`, gestão de revendedores no admin — tudo removido. Diretórios vazios `app/(site)/revenda`, `app/(site)/revendedor`, `app/api/resellers`, `app/api/commissions` podem ser deletados.
-- **Login real do admin**: tabela `users`, senha com hash (scrypt), sessão via cookie HttpOnly `lumiine_session` (HMAC-SHA256). Admin seed: `admin@lumiine.com` / `admin123`.
-- API routes atuais em `app/api/`: auth (login/logout/me), products (+[id]), orders (+[id]), loyalty, expenses (+[id]), stock.
-- Redesenho Executivo do Painel Administrativo (`/admin`): identidade Obsidian & Gold (`#09090B`, `#0E0E12`, `#18181C` com acentos `#D4AF37` / `#E8C868`), sidebar por categorias (Visão Geral, Operações, Finanças), drawer mobile, dashboard com KPIs, gestão de pedidos com filtros, catálogo com controle de visibilidade e foto, controle de estoque, painel financeiro & DRE (despesas).
-- Favicon e título da aba customizados com a identidade da marca.
-- Hero com animação 3D do produto (WebM VP9 no Chrome/Edge com transparência, fallback MP4 via Canvas nos demais).
-- Build validado com TypeScript: 16 rotas compilando sem erros. **Atenção:** se surgirem erros TS falsos em `.next/dev/types/validator.ts`, limpar a pasta `.next` antes de buildar.
-- Último commit: `33fe1a5` em `origin/master` com redirect www→apex aplicado e deploy Ready.
-- **Hardening de segurança (2026-09-05)**: autenticação exigida em todas as rotas admin (`lib/auth.ts` com `getAdmin()` + 401), validação de entrada (`lib/validate.ts`) em POST/PATCH/DELETE, rate limiting por IP no Neon (`lib/rate-limit.ts`, tabela `rate_limits`) no POST de pedidos e no login, anti-enumeração no login (hash dummy via scrypt), `lib/session.ts` endurecido (secret exclusivo `SESSION_SECRET`, expiração de 7d no token), `lib/password.ts` com limite de 1024 chars, `AppContext` só carrega dados admin autenticado (e limpa no logout), headers de segurança no `next.config.ts`, `metadataBase` no layout.
-- **CSP com nonce via `proxy.ts` (2026-09-05)**: a CSP estática (`script-src 'self'`) bloqueava os scripts inline do Next (`self.__next_f`), matando a hidratação no cliente — botões (carrinho, login, checkout) não respondiam. Corrigido com `proxy.ts` (convenção do Next 16, antigo middleware) gerando um nonce por request, injetado no `x-nonce` + `Content-Security-Policy`; CSP removida do `next.config.ts` (evita header duplicado) e `force-dynamic` no `app/layout.tsx` (exigência para nonce). Scripts agora vêm com `nonce` e a hidratação volta a funcionar. APIs/estáticos ficam fora do CSP via matcher.
-- **Produto `menu-monte-seu-shake` restaurado no Neon** (2026-09-05): linha estava ausente do banco (removida por engano); restaurada via upsert idêntico ao seed (stock 100, 7 addons). O fallback do cliente já corrigia a exibição, mas o admin/estoque dependia da linha.
 
-## Domínio personalizado (CONCLUÍDO - 2026-09-05)
-- Domínio: **shakelumiinezn.com.br** (Registro.br), delegado via nameservers Vercel (`ns1.vercel-dns.com` / `ns2.vercel-dns.com`) — Opção B (delegação total).
-- `vercel domains inspect shakelumiinezn.com.br` confirmou nameservers atuais corretos e sem WARNING.
-- SSL emitido manualmente (a Vercel não emitiu sozinha): `vercel certs issue shakelumiinezn.com.br` e `vercel certs issue www.shakelumiinezn.com.br`.
-- Apex respondendo HTTPS 200 em https://shakelumiinezn.com.br. `www` também 200 (sem redirect automático; a Vercel NÃO gerencia redirect www sozinha, a despeito do esperado).
-- **PENDENTE:** redirect www→apex adicionado em `next.config.ts` (via `has: { type: "host" }` + `permanent: true`), validado no build local. Falta apenas commit + push para o deploy automático aplicar.
-- Conta Vercel (scope `jason-3c4d`, usuário `jassonmouragt-9214`). Outros domínios: `sualojinhamakeup.com.br` (nameservers Vercel, funcionando).
+### Últimos commits (sessão 2026-09-12, todos pushed em origin/master)
+- `752620f` feat: acréscimo único nas bebidas funcionais, máx. 3 sabores e preço por item no WhatsApp
+- `db2cc64` fix: cadastro de produtos com peso/litragem opcional e erros de salvamento visíveis
+- Working tree limpo.
+
+### Produtos & Monte Seu Shake (alterações desta sessão)
+- **Peso/Litragem opcional no admin**: era hardcoded `weight: '600g'` no cadastro de produto (`app/admin/page.tsx`). Agora há campo opcional "Peso / Litragem" nas modais Criar e Editar. Listagem do admin mostra "Sem peso/litragem definido" quando vazio. Enviado `''` quando vazio; APIs POST/PATCH já tratam peso vazio.
+- **Produtos não salvando — corrigido**: originava de erros do servidor engolidos (`.catch(() => {})`). Agora:
+  - `addProduct`/`updateProduct`/`deleteProduct`/`toggleProductShowcase` mostram toast de erro (tipo `'error'`, ícone vermelho) com a mensagem real do servidor.
+  - Produto falho é removido da lista otimista no POST falho.
+  - **Id real do servidor** retornado pelo POST é usado (antes o cliente criava `prod-<timestamp>` próprio e o servidor outro → PATCH/DELETE em produto recém-criado dava 404).
+  - **Importante**: sem `.env.local` no repo, o POST local falha com "DATABASE_URL não configurado" e o site cai no fallback `INITIAL_PRODUCTS`. Para persistir localmente: criar `.env.local` (ver `.env.local.example`) + `npm run db:migrate` + `npm run db:seed`.
+- **Monte Seu Shake — Bebidas Funcionais**: acréscimo ÚNICO de R$ 2,00 (não por item). Novo campo `surcharge?: number` em `CustomizationStep` (`types/index.ts`); passo `bebida` em `lib/mock-data.ts` usa `surcharge: 2` e opções sem `price`. Cálculo atualizado nos 3 pontos que somam a montagem: página do produto (`stepsTotal`), `cartSubtotal` (AppContext) e `CartDrawer` (`customTotal`). Renomes: "Copo de NRG" → "Chá de NRG", "Copo de Herbal Concentrate" → "Chá de Herbal Concentrate" (ids `copo-nrg`/`copo-herbal` mantidos).
+- **Monte Seu Shake — Escolha o Sabor**: `max: 3` (até 3 opções; UI já mostra contador X/3 e trava no limite).
+- Revisão geral: corrigido preço por item na mensagem WhatsApp (`buildWhatsAppMessage` em `CartDrawer.tsx`) que não incluía custos de personalização (adicionais + surcharge) — linhas não batiam com o total.
+
+### Verificação
+- `npx tsc --noEmit` e `npm run build` passam (Next 16.3.4, Turbopack).
+- Lint ainda tem ~30 erros/warnings PRÉ-EXISTENTES (`no-explicit-any`, `react-hooks/set-state-in-effect`, `react-hooks/purity` Math.random, unused imports/vars). Não vêm das mudanças desta sessão.
+
+### Limitação conhecida (não corrigida)
+- Modal de detalhes do pedido no admin: preço por item NÃO inclui custos de personalização (addons/seleções não são persistidos separadamente em `order_items` — só o texto resumo em `selected_flavor`). Corrigir exige mudança de schema + route de pedidos.
+
+## Estado anterior (checkpoint 2026-09-05)
+- Deploy de produção ativo: https://shakelumiinezn.com.br (domínio próprio) e https://shakelumiinezn.vercel.app.
+- Repositório GitHub: https://github.com/jassonmouragt-prog/shakelumiinezn (branch master), Vercel conectado (deploy automático em push).
+- Persistência no Neon (Postgres serverless) — projeto Neon `sparkling-cherry-15094366`.
+- `INITIAL_PRODUCTS` em `lib/mock-data.ts` (14 produtos) como fallback; `AppContext` hidrata do `/api/products` mesclando com fallback (imagem, badge, galeria).
+- Área do Revendedor REMOVIDA (`fa5bc81` 2026-09-05).
+- Login real do admin (tabela `users`, scrypt hash, cookie `lumiine_session` HMAC). Admin seed: `admin@lumiine.com` / `admin123`.
+- Redesenho Executivo do Painel Admin (`/admin`), identidade Obsidian & Gold.
+- CSP com nonce via `proxy.ts` (convenção Next 16, antigo middleware) + `force-dynamic` no `app/layout.tsx`.
+- Produto `menu-monte-seu-shake` restaurado no Neon.
+- Domínio personalizado concluído com redirect www→apex no `next.config.ts`.
 
 ## Fontes de trabalho locais (NÃO versionadas)
 - "hype drink - product animation 3d.mov" (sem alpha)
