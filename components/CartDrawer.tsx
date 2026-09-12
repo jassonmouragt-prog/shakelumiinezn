@@ -20,9 +20,15 @@ function buildWhatsAppMessage(order: Order): string {
       .map((id) => item.product.addons?.find((a) => a.id === id))
       .filter((a): a is NonNullable<typeof a> => Boolean(a));
     const addonsTotal = addons.reduce((sum, a) => sum + a.price, 0);
+    const customTotal = Object.entries(item.customSelections ?? {}).reduce((sum, [stepId, optionIds]) => {
+      const step = item.product.customizationSteps?.find((s) => s.id === stepId);
+      if (!step || optionIds.length === 0) return sum;
+      if (step.surcharge) return sum + step.surcharge;
+      return sum + optionIds.reduce((s, optId) => s + (step.options.find((o) => o.id === optId)?.price ?? 0), 0);
+    }, 0);
     const addonsText = addons.map((a) => `+ ${a.label}`).join(', ');
     lines.push(
-      `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''}${addonsText ? ` — ${addonsText}` : ''} x${item.quantity} — R$ ${((base + addonsTotal) * item.quantity).toFixed(2).replace('.', ',')}`
+      `${i + 1}. ${item.product.name}${item.selectedFlavor ? ` (${item.selectedFlavor})` : ''}${addonsText ? ` — ${addonsText}` : ''} x${item.quantity} — R$ ${((base + addonsTotal + customTotal) * item.quantity).toFixed(2).replace('.', ',')}`
     );
   });
   lines.push('');
@@ -150,7 +156,9 @@ export default function CartDrawer() {
                 );
                 const customTotal = Object.entries(item.customSelections ?? {}).reduce((sum, [stepId, optionIds]) => {
                   const step = item.product.customizationSteps?.find((s) => s.id === stepId);
-                  return sum + (step ? optionIds.reduce((s, optId) => s + (step.options.find((o) => o.id === optId)?.price ?? 0), 0) : 0);
+                  if (!step || optionIds.length === 0) return sum;
+                  if (step.surcharge) return sum + step.surcharge;
+                  return sum + optionIds.reduce((s, optId) => s + (step.options.find((o) => o.id === optId)?.price ?? 0), 0);
                 }, 0);
                 const itemPrice = itemBase + addonsTotal + customTotal;
                 const isBuilder = (item.product.customizationSteps?.length ?? 0) > 0;

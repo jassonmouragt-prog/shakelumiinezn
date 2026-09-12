@@ -17,6 +17,7 @@ export interface CustomizationStep {
   type: 'single' | 'multi';
   max?: number;
   required?: boolean;
+  surcharge?: number;
   options: CustomizationOption[];
 }
 

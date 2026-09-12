@@ -379,7 +379,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }, 0);
     const customTotal = Object.entries(item.customSelections ?? {}).reduce((sum, [stepId, optionIds]) => {
       const step = item.product.customizationSteps?.find((s) => s.id === stepId);
-      if (!step) return sum;
+      if (!step || optionIds.length === 0) return sum;
+      if (step.surcharge) return sum + step.surcharge;
       return sum + optionIds.reduce((s, optId) => {
         const opt = step.options.find((o) => o.id === optId);
         return s + (opt?.price ?? 0);

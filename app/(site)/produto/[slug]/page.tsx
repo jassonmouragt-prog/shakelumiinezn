@@ -102,6 +102,8 @@ export default function SingleProductPage() {
 
   const stepsTotal = steps.reduce((acc, step) => {
     const sel = selections[step.id] ?? [];
+    if (sel.length === 0) return acc;
+    if (step.surcharge) return acc + step.surcharge;
     return acc + sel.reduce((sum, optId) => sum + (step.options.find((o) => o.id === optId)?.price ?? 0), 0);
   }, 0);
 

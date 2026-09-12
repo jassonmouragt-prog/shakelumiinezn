@@ -55,12 +55,13 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'bebida',
         title: 'Bebidas Funcionais',
-        subtitle: 'Escolha uma ou mais bebidas (opcional) — acréscimo de R$ 2,00 cada',
+        subtitle: 'Escolha uma ou mais bebidas (opcional) — acréscimo único de R$ 2,00',
         type: 'multi',
         required: false,
+        surcharge: 2,
         options: [
-          { id: 'copo-nrg', label: 'Copo de NRG', price: 2 },
-          { id: 'copo-herbal', label: 'Copo de Herbal Concentrate', price: 2 }
+          { id: 'copo-nrg', label: 'Chá de NRG' },
+          { id: 'copo-herbal', label: 'Chá de Herbal Concentrate' }
         ]
       },
       {
@@ -101,9 +102,10 @@ export const INITIAL_PRODUCTS: Product[] = [
       {
         id: 'sabores',
         title: 'Escolha o Sabor',
-        subtitle: 'Combine quantos sabores quiser',
+        subtitle: 'Combine até 3 sabores',
         type: 'multi',
         required: false,
+        max: 3,
         options: [
           { id: 'baunilha', label: 'Baunilha' },
           { id: 'morango', label: 'Morango' },
